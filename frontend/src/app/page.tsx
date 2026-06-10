@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WeeklyTrendChart } from "@/components/WeeklyTrendChart";
 import { Car, Zap, Utensils, ShoppingBag, Plus } from "lucide-react";
 import Link from "next/link";
+import { StreakWidget } from "@/components/StreakWidget";
+import { BadgeGrid } from "@/components/BadgeGrid";
 
 export default function DashboardPage() {
   return (
@@ -22,6 +24,8 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
+      <StreakWidget streak={3} />
+
       {/* Quick Log Grid */}
       <section>
         <div className="flex items-center justify-between mb-3">
@@ -32,12 +36,12 @@ export default function DashboardPage() {
         </div>
         <div className="grid grid-cols-4 gap-3">
           {[
-            { icon: Utensils, label: "Food", color: "bg-orange-100 text-orange-600" },
-            { icon: Car, label: "Drive", color: "bg-blue-100 text-blue-600" },
-            { icon: Zap, label: "Energy", color: "bg-yellow-100 text-yellow-600" },
-            { icon: ShoppingBag, label: "Shop", color: "bg-purple-100 text-purple-600" },
+            { icon: Utensils, label: "Food", category: "food", color: "bg-orange-100 text-orange-600" },
+            { icon: Car, label: "Drive", category: "transport", color: "bg-blue-100 text-blue-600" },
+            { icon: Zap, label: "Energy", category: "energy", color: "bg-yellow-100 text-yellow-600" },
+            { icon: ShoppingBag, label: "Shop", category: "shopping", color: "bg-purple-100 text-purple-600" },
           ].map((item, i) => (
-            <Link href={`/log?category=${item.label.toLowerCase()}`} key={i} className="flex flex-col items-center gap-2">
+            <Link href={`/log?category=${item.category}`} key={i} className="flex flex-col items-center gap-2">
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${item.color}`}>
                 <item.icon className="w-6 h-6" />
               </div>
@@ -56,6 +60,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </section>
+
+      <BadgeGrid />
       
       {/* Spacer for bottom nav */}
       <div className="h-4"></div>

@@ -37,7 +37,10 @@ export async function updateSession(request: NextRequest) {
                        request.nextUrl.pathname.startsWith("/auth") ||
                        request.nextUrl.pathname.startsWith("/onboarding") ||
                        request.nextUrl.pathname === "/" ||
-                       request.nextUrl.pathname.startsWith("/log");
+                       request.nextUrl.pathname.startsWith("/log") ||
+                       request.nextUrl.pathname.startsWith("/insights") ||
+                       request.nextUrl.pathname.startsWith("/goals") ||
+                       request.nextUrl.pathname.startsWith("/profile");
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
