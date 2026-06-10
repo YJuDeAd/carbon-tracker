@@ -1,0 +1,16 @@
+{
+  "name": "carbon-tracker",
+  "version": "1.0.0",
+  "description": "A mobile-first web app that helps individuals understand, track, and reduce their carbon footprint through simple daily logging and AI-powered personalized insights.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "supabase": "^2.105.0"
+  }
+}

@@ -1,0 +1,13 @@
+# Supabase
+supabase/.temp/
+supabase/.branches/
+
+# Global
+.DS_Store
+Thumbs.db
+.env
+.env.*
+node_modules/
+
+# Testing
+blob-report/
