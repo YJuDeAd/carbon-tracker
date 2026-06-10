@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routers import users, activities
+from api.routers import users, activities, insights, goals
 
 app = FastAPI(
     title="Carbon Footprint Tracker API",
@@ -19,6 +19,8 @@ app.add_middleware(
 
 app.include_router(users.router)
 app.include_router(activities.router)
+app.include_router(insights.router)
+app.include_router(goals.router)
 
 @app.get("/health")
 def health_check():

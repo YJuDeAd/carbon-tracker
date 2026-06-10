@@ -11,6 +11,12 @@ class GoalCreate(BaseModel):
     deadline: date
     status: Status = "active"
 
+class GoalUpdate(BaseModel):
+    category: Category | None = None
+    target_co2e: float | None = Field(None, gt=0, description="Target CO2e reduction in kg")
+    deadline: date | None = None
+    status: Status | None = None
+
 class GoalResponse(GoalCreate):
     id: str
     user_id: str
