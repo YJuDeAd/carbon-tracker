@@ -122,21 +122,21 @@ insights        (id, user_id, week_start, tips_json, generated_at)
 
 Agents work in phases matching the project roadmap:
 
-**Phase 1 (MVP):**
-1. Design Architect → produces `DESIGN.md` for all MVP screens
-2. Database Engineer → schema + migrations + RLS + seed emission factors
-3. Backend Engineer → auth endpoints + activity logging endpoints
-4. Frontend Engineer → onboarding + log activity + basic dashboard
-5. QA Engineer → Playwright tests for core flows
+**Phase 1 (MVP) - [COMPLETED]:**
+- [x] 1. Design Architect → produces `DESIGN.md` for all MVP screens
+- [x] 2. Database Engineer → schema + migrations + RLS + seed emission factors
+- [x] 3. Backend Engineer → auth endpoints + activity logging endpoints
+- [x] 4. Frontend Engineer → onboarding + log activity + basic dashboard
+- [x] 5. QA Engineer → Playwright tests for core flows
 
-**Phase 2 (Core Product):**
-1. Backend Engineer → Groq insights service + goals endpoints
-2. Frontend Engineer → insights page + goals page + streaks/badges
-3. DevOps Engineer → CI/CD pipeline + Vercel + Render deployment
-4. QA Engineer → full E2E test suite + emission calculation unit tests
+**Phase 2 (Core Product) - [IN PROGRESS]:**
+- [ ] 1. Backend Engineer → Groq insights service + goals endpoints
+- [ ] 2. Frontend Engineer → insights page + goals page + streaks/badges
+- [ ] 3. DevOps Engineer → CI/CD pipeline + Vercel + Render deployment
+- [ ] 4. QA Engineer → full E2E test suite + emission calculation unit tests
 
-**Phase 3 (Growth):**
-1. Frontend Engineer → education hub + community challenges + PWA
-2. Backend Engineer → OpenStreetMap integration + push notification triggers
-3. DevOps Engineer → production monitoring + performance review
-4. QA Engineer → regression tests for all new features
+**Phase 3 (Growth) - [PENDING]:**
+- [ ] 1. Frontend Engineer → education hub + community challenges + PWA
+- [ ] 2. Backend Engineer → OpenStreetMap integration + push notification triggers
+- [ ] 3. DevOps Engineer → production monitoring + performance review
+- [ ] 4. QA Engineer → regression tests for all new features
