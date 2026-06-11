@@ -6,7 +6,7 @@ test.describe('Goals Page', () => {
     await page.goto('/goals');
 
     // Wait for page to load
-    await expect(page.getByText('Your Goals')).toBeVisible();
+    await expect(page.locator('h1', { hasText: /^Goals$/ })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Set New Goal' })).toBeVisible();
 
     // Click the Set New Goal button

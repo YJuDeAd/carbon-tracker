@@ -24,6 +24,6 @@ test.describe('Dashboard Rendering', () => {
 
     // Validate Gamification (Streaks & Badges)
     await expect(page.getByText('Current Streak')).toBeVisible();
-    await expect(page.getByText('Achievements')).toBeVisible();
+    await expect(page.getByText('Your Badges')).toBeVisible();
   });
 });

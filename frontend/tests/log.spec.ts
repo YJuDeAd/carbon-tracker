@@ -8,9 +8,7 @@ test.describe('Log Activity Flow', () => {
     // Transport tab should be active/visible
     await expect(page.getByText('Vehicle Type')).toBeVisible();
 
-    // Select 'Electric Vehicle'
-    await page.getByRole('combobox').click();
-    await page.getByRole('option', { name: 'Electric Vehicle' }).click();
+    await page.locator('select#transport-type').selectOption('Electric Car');
 
     // Enter distance
     await page.fill('input#distance', '45');
