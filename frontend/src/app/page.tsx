@@ -43,7 +43,7 @@ export default function DashboardPage() {
 
         if (dashRes.ok) {
           const dashData = await dashRes.json();
-          if (dashData.baseline_score === null) {
+          if (!dashData.baseline_score || dashData.baseline_score === 0) {
             router.push("/onboarding");
             return;
           }
