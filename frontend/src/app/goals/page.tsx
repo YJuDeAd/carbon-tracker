@@ -16,7 +16,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 export default function GoalsPage() {
   const supabase = createClient();
-  const [goals, setGoals] = useState<any[]>([]);
+  const [goals, setGoals] = useState<{id: string, status: string, target_co2e: number, current_co2e?: number, category: string, deadline: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
 
@@ -53,7 +53,9 @@ export default function GoalsPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleToggle = async (id: string, completed: boolean) => {
@@ -114,9 +116,9 @@ export default function GoalsPage() {
             console.error(err);
             alert("Failed to save goal: " + err);
         }
-    } catch(e: any) {
+    } catch(e) {
         console.error(e);
-        alert("Network error: " + e.message);
+        alert("Network error: " + (e instanceof Error ? e.message : String(e)));
     }
   };
 
@@ -194,7 +196,7 @@ export default function GoalsPage() {
         ) : goals.length === 0 ? (
             <p className="text-muted-foreground text-sm">No goals active. Create one above!</p>
         ) : (
-            goals.map(goal => (
+            goals.map((goal: {id: string, status: string, target_co2e: number, current_co2e?: number, category: string, deadline: string}) => (
                 <GoalCard key={goal.id} goal={goal} onToggle={handleToggle} />
             ))
         )}

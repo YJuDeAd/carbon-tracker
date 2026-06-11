@@ -11,7 +11,7 @@ export function StreakWidget({ streak = 3 }: { streak?: number }) {
           </div>
           <div>
             <h3 className="font-bold text-orange-900">Current Streak</h3>
-            <p className="text-sm text-orange-700">You're on fire! 🔥</p>
+            <p className="text-sm font-medium">You&apos;re on fire!</p>
           </div>
         </div>
         <div className="text-3xl font-bold text-orange-600">{streak}</div>

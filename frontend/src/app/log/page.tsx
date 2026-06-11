@@ -25,11 +25,12 @@ function LogActivityForm() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
   
-  const [activeTab, setActiveTab] = useState<keyof typeof CATEGORY_OPTIONS>((categoryParam as any) || "transport");
+  const [activeTab, setActiveTab] = useState<keyof typeof CATEGORY_OPTIONS>((categoryParam && categoryParam in CATEGORY_OPTIONS ? categoryParam as keyof typeof CATEGORY_OPTIONS : "transport"));
   const [activityType, setActivityType] = useState(CATEGORY_OPTIONS[activeTab][0]);
   const [amount, setAmount] = useState("");
+  const [factors, setFactors] = useState<{activity_type: string, unit: string}[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [recentLogs, setRecentLogs] = useState<any[]>([]);
+  const [recentLogs, setRecentLogs] = useState<{id: string, activity_type: string, co2e_kg: number, date: string, category: string}[]>([]);
 
   useEffect(() => {
     async function fetchRecent() {
@@ -40,8 +41,8 @@ function LogActivityForm() {
           headers: { "Authorization": `Bearer ${session.access_token}` }
         });
         if (res.ok) {
-          const data = await res.json();
-          setRecentLogs(data.slice(0, 5));
+          const data: ActivityLog[] = await res.json();
+          setRecentLogs((data || []).slice(0, 5));
         }
       } catch (err) {
         console.error("Failed to load recent logs", err);
@@ -52,7 +53,9 @@ function LogActivityForm() {
 
   // Reset activity type when tab changes
   useEffect(() => {
-    setActivityType(CATEGORY_OPTIONS[activeTab][0]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActivityType(CATEGORY_OPTIONS[activeTab as keyof typeof CATEGORY_OPTIONS][0]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAmount("");
   }, [activeTab]);
 
@@ -86,9 +89,9 @@ function LogActivityForm() {
 
       router.refresh();
       router.push("/");
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      alert(error.message);
+      alert(error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
     }

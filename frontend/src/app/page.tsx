@@ -16,7 +16,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [streak, setStreak] = useState(0);
   const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
-  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [dashboardData, setDashboardData] = useState<{this_week_co2e: number, percent_diff: number, weekly_trend: {date: string, co2e_kg: number}[]} | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
@@ -88,7 +88,7 @@ export default function DashboardPage() {
       {/* Hero Metric */}
       <Card className="bg-primary text-primary-foreground border-none shadow-md">
         <CardContent className="p-6">
-          <div className="text-sm font-medium opacity-90 mb-2">This Week's Footprint</div>
+          <div className="text-sm font-medium opacity-90 mb-2">This Week&apos;s Footprint</div>
           <div className="flex items-end gap-2">
             <span className="text-5xl font-bold">{footprint}</span>
             <span className="text-lg opacity-90 pb-1">kg CO₂e</span>

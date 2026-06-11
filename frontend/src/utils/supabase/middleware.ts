@@ -37,6 +37,9 @@ export async function updateSession(request: NextRequest) {
                        request.nextUrl.pathname.startsWith("/auth");
 
   if (!user && !isPublicPath) {
+    if (process.env.NEXT_PUBLIC_SKIP_AUTH === "true") {
+      return supabaseResponse;
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

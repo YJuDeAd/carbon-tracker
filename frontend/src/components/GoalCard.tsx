@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 
-export function GoalCard({ goal, onToggle }: { goal: any, onToggle: (id: string, completed: boolean) => void }) {
+export function GoalCard({ goal, onToggle }: { goal: { id: string, status: string, target_co2e: number, current_co2e?: number, category: string, deadline: string }, onToggle: (id: string, completed: boolean) => void }) {
   const isCompleted = goal.status === "completed";
   const progress = isCompleted ? 100 : Math.min(100, Math.max(0, (goal.current_co2e || 0) / goal.target_co2e * 100));
 

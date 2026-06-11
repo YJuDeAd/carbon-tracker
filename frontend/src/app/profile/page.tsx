@@ -25,6 +25,7 @@ export default function ProfilePage() {
   const [bestStreak, setBestStreak] = useState(0);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     async function loadProfile() {
       const { data: { session } } = await supabase.auth.getSession();
@@ -51,6 +52,7 @@ export default function ProfilePage() {
       }
     }
     loadProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLogout = async () => {

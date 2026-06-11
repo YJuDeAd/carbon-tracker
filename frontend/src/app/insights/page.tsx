@@ -46,7 +46,7 @@ export default function InsightsPage() {
           .then(acts => {
             if (Array.isArray(acts)) {
               const summary: Record<string, number> = {};
-              acts.forEach((a: any) => {
+              acts.forEach((a: { category: string; co2e_kg: number }) => {
                 summary[a.category] = (summary[a.category] || 0) + a.co2e_kg;
               });
               setChartData(Object.keys(summary).map(k => ({ name: k, value: summary[k] })));

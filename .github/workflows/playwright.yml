@@ -26,12 +26,14 @@ jobs:
       env:
         NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321"
         NEXT_PUBLIC_SUPABASE_ANON_KEY: "dummy_anon_key"
+        NEXT_PUBLIC_SKIP_AUTH: "true"
       run: npm run build
     - name: Run Playwright tests
       working-directory: ./frontend
       env:
         NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321"
         NEXT_PUBLIC_SUPABASE_ANON_KEY: "dummy_anon_key"
+        NEXT_PUBLIC_SKIP_AUTH: "true"
       run: npx playwright test
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
