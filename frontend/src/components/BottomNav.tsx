@@ -7,13 +7,13 @@ import { Home, PlusCircle, BarChart2, User } from "lucide-react";
 export function BottomNav() {
   const pathname = usePathname();
 
-  // Hide nav on onboarding and login screens
-  if (pathname.startsWith("/onboarding") || pathname.startsWith("/login")) {
+  // Hide nav on onboarding, login, and signup screens
+  if (pathname.startsWith("/onboarding") || pathname.startsWith("/login") || pathname.startsWith("/signup")) {
     return null;
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-safe">
       <div className="flex justify-around items-center h-16 max-w-md mx-auto px-4">
         <Link href="/" className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${pathname === "/" ? "text-primary" : "text-muted-foreground"}`}>
           <Home className="w-6 h-6" />

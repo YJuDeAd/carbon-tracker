@@ -17,10 +17,23 @@ export default function ProfilePage() {
   const [mounted, setMounted] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [metricUnits, setMetricUnits] = useState(true);
+  const [userName, setUserName] = useState("Eco Warrior");
+  const [userJoined, setUserJoined] = useState("");
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        if (user.user_metadata?.name) {
+          setUserName(user.user_metadata.name);
+        }
+        const joinedDate = new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+        setUserJoined(`Joined ${joinedDate}`);
+      }
+    }
+    getUser();
+  }, [supabase.auth]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -40,8 +53,8 @@ export default function ProfilePage() {
             <User className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-foreground">Eco Warrior</h2>
-            <p className="text-sm text-muted-foreground">Joined June 2026</p>
+            <h2 className="text-xl font-bold text-foreground">{userName}</h2>
+            <p className="text-sm text-muted-foreground">{userJoined || "Joined recently"}</p>
           </div>
         </CardContent>
       </Card>

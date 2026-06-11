@@ -18,8 +18,26 @@ def create_goal(goal: GoalCreate, user_id: str = Depends(get_current_user_id)):
 
 @router.get("", response_model=list[GoalResponse])
 def get_goals(user_id: str = Depends(get_current_user_id)):
-    resp = supabase.table("goals").select("*").eq("user_id", user_id).order("deadline", desc=False).execute()
-    return resp.data
+    goals_resp = supabase.table("goals").select("*").eq("user_id", user_id).order("deadline", desc=False).execute()
+    goals = goals_resp.data
+
+    if not goals:
+        return []
+
+    # Calculate actual progress from activities
+    activities_resp = supabase.table("activities").select("category, co2e_kg").eq("user_id", user_id).execute()
+    
+    progress_by_category = {}
+    for act in activities_resp.data:
+        cat = act["category"].lower()
+        progress_by_category[cat] = progress_by_category.get(cat, 0.0) + float(act["co2e_kg"])
+
+    # Attach progress to goals
+    for goal in goals:
+        cat = goal["category"].lower()
+        goal["current_co2e"] = progress_by_category.get(cat, 0.0)
+
+    return goals
 
 @router.get("/{goal_id}", response_model=GoalResponse)
 def get_goal(goal_id: str, user_id: str = Depends(get_current_user_id)):

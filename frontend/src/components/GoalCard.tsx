@@ -5,7 +5,7 @@ export function GoalCard({ goal, onToggle }: { goal: any, onToggle: (id: string,
   const progress = isCompleted ? 100 : Math.min(100, Math.max(0, (goal.current_co2e || 0) / goal.target_co2e * 100));
 
   return (
-    <Card className={`shadow-sm mb-3 transition-colors ${isCompleted ? 'bg-green-50/50' : 'bg-white'}`}>
+    <Card className={`shadow-sm mb-3 transition-colors ${isCompleted ? 'bg-green-50/50 dark:bg-green-900/20' : 'bg-card'}`}>
       <CardContent className="p-4 flex flex-col gap-3">
         <div className="flex justify-between items-start">
           <div>

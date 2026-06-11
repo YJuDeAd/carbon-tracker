@@ -13,7 +13,7 @@ def log_activity(activity: ActivityCreate, user_id: str = Depends(get_current_us
     """
     # 1. Fetch the emission factor
     factor_resp = supabase.table("emission_factors").select("*") \
-        .eq("category", activity.category) \
+        .eq("category", activity.category.title()) \
         .eq("activity_type", activity.activity_type) \
         .execute()
         

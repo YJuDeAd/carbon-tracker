@@ -3,14 +3,17 @@
 import { useEffect, useState } from "react";
 import { GoalCard } from "@/components/GoalCard";
 import { Card, CardContent } from "@/components/ui/card";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:54321",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy"
-);
+import { createClient } from "@/utils/supabase/client";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { buttonVariants } from "@/components/ui/button";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function GoalsPage() {
+  const supabase = createClient();
   const [goals, setGoals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
@@ -18,7 +21,7 @@ export default function GoalsPage() {
   // Form states
   const [target, setTarget] = useState("");
   const [category, setCategory] = useState("food");
-  const [deadline, setDeadline] = useState("");
+  const [deadlineDate, setDeadlineDate] = useState<Date>();
 
   const loadData = async () => {
     setLoading(true);
@@ -38,9 +41,7 @@ export default function GoalsPage() {
       if (res.ok) {
         const data = await res.json();
         
-        // Mock current_co2e for demo since there's no backend progress tracking
-        const goalsWithProgress = data.map((g: any) => ({...g, current_co2e: Math.random() * g.target_co2e}));
-        setGoals(goalsWithProgress);
+        setGoals(data);
       }
     } catch (e) {
       console.error(e);
@@ -74,7 +75,19 @@ export default function GoalsPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !target || !deadline) return;
+    const deadlineStr = deadlineDate ? format(deadlineDate, "yyyy-MM-dd") : "";
+    if (!token) {
+      alert("You must be logged in to create a goal.");
+      return;
+    }
+    if (!target) {
+      alert("Please enter a target amount.");
+      return;
+    }
+    if (!deadlineStr) {
+      alert("Please pick a deadline.");
+      return;
+    }
 
     try {
         const res = await fetch(`http://127.0.0.1:8000/goals`, {
@@ -86,17 +99,22 @@ export default function GoalsPage() {
             body: JSON.stringify({
                 category,
                 target_co2e: parseFloat(target),
-                deadline,
+                deadline: deadlineStr,
                 status: "active"
             })
         });
         if (res.ok) {
             setTarget("");
-            setDeadline("");
+            setDeadlineDate(undefined);
             loadData();
+        } else {
+            const err = await res.text();
+            console.error(err);
+            alert("Failed to save goal: " + err);
         }
-    } catch(e) {
+    } catch(e: any) {
         console.error(e);
+        alert("Network error: " + e.message);
     }
   };
 
@@ -108,39 +126,55 @@ export default function GoalsPage() {
       </header>
 
       {/* Create Goal Form */}
-      <Card className="bg-primary/5 border-primary/10 mb-6">
+      <Card className="bg-primary/5 border-primary/10 mb-6 overflow-visible">
         <CardContent className="p-4">
             <h3 className="font-bold mb-3 text-primary">New Goal</h3>
             <form onSubmit={handleCreate} className="flex flex-col gap-3">
                 <div className="flex gap-2">
-                    <select 
-                        value={category} 
-                        onChange={e => setCategory(e.target.value)}
-                        className="flex-1 bg-white border border-border rounded-md px-3 py-2 text-sm"
-                    >
-                        <option value="food">Food</option>
-                        <option value="transport">Transport</option>
-                        <option value="energy">Energy</option>
-                        <option value="shopping">Shopping</option>
-                        <option value="travel">Travel</option>
-                    </select>
+                    <Select value={category} onValueChange={setCategory}>
+                      <SelectTrigger className="flex-1 bg-background">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="food">Food</SelectItem>
+                        <SelectItem value="transport">Transport</SelectItem>
+                        <SelectItem value="energy">Energy</SelectItem>
+                        <SelectItem value="shopping">Shopping</SelectItem>
+                        <SelectItem value="travel">Travel</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <input 
                         type="number" 
                         placeholder="Target (kg CO₂e)" 
                         value={target}
                         onChange={e => setTarget(e.target.value)}
-                        className="flex-1 bg-white border border-border rounded-md px-3 py-2 text-sm"
+                        className="flex-1 bg-background border border-border rounded-md px-3 py-2 text-sm"
                         required
                     />
                 </div>
                 <div className="flex gap-2">
-                    <input 
-                        type="date" 
-                        value={deadline}
-                        onChange={e => setDeadline(e.target.value)}
-                        className="flex-1 bg-white border border-border rounded-md px-3 py-2 text-sm"
-                        required
-                    />
+                    <Popover>
+                      <PopoverTrigger 
+                        className={cn(
+                          buttonVariants({ variant: "outline" }),
+                          "flex-1 justify-start text-left font-normal bg-background text-sm px-3 py-2 h-auto",
+                          !deadlineDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {deadlineDate ? format(deadlineDate, "PPP") : <span>Pick deadline</span>}
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={deadlineDate}
+                          onSelect={setDeadlineDate}
+                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+
                     <button type="submit" className="bg-primary text-primary-foreground font-bold rounded-md px-4 py-2 text-sm">
                         Add Goal
                     </button>

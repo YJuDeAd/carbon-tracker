@@ -20,5 +20,6 @@ class GoalUpdate(BaseModel):
 class GoalResponse(GoalCreate):
     id: str
     user_id: str
+    current_co2e: float = 0.0
     
     model_config = ConfigDict(from_attributes=True)

@@ -48,7 +48,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
   
-  if (user && isPublicPath) {
+  const isAuthPath = request.nextUrl.pathname.startsWith("/login") || 
+                     request.nextUrl.pathname.startsWith("/signup") || 
+                     request.nextUrl.pathname.startsWith("/auth");
+
+  if (user && isAuthPath) {
     // Redirect logged in users away from login pages
     const url = request.nextUrl.clone();
     url.pathname = "/";

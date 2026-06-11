@@ -1,24 +1,73 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Car, Zap, Utensils, ShoppingBag, Plane } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+
+const CATEGORY_OPTIONS = {
+  food: ["Beef", "Poultry", "Pork", "Fish", "Dairy", "Plant-based Meal"],
+  transport: ["Petrol Car", "Diesel Car", "Electric Car", "Hybrid Car", "Bus", "Train", "Bicycle/Walking"],
+  energy: ["Grid Electricity", "Natural Gas", "Heating Oil", "Renewable Energy"],
+  shopping: ["Clothing Item", "Electronics", "Furniture"],
+  travel: ["Short-haul Flight", "Long-haul Flight", "Hotel Stay"]
+};
 
 function LogActivityForm() {
   const router = useRouter();
+  const supabase = createClient();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
-  const [activeTab, setActiveTab] = useState(categoryParam || "transport");
+  
+  const [activeTab, setActiveTab] = useState<keyof typeof CATEGORY_OPTIONS>((categoryParam as any) || "transport");
+  const [activityType, setActivityType] = useState(CATEGORY_OPTIONS[activeTab][0]);
   const [amount, setAmount] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLog = (e: React.FormEvent) => {
+  // Reset activity type when tab changes
+  useEffect(() => {
+    setActivityType(CATEGORY_OPTIONS[activeTab][0]);
+    setAmount("");
+  }, [activeTab]);
+
+  const handleLog = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate backend submission
-    router.push("/");
+    if (!amount || isNaN(parseFloat(amount))) return;
+    
+    setIsLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch('http://127.0.0.1:8000/activities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          date: new Date().toISOString().split('T')[0],
+          category: activeTab,
+          activity_type: activityType,
+          quantity: parseFloat(amount),
+          notes: ""
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to log activity");
+      }
+
+      router.push("/");
+    } catch (error) {
+      console.error(error);
+      alert("Error logging activity. Check console.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -27,8 +76,8 @@ function LogActivityForm() {
         <h1 className="text-3xl font-bold text-foreground">Log Activity</h1>
       </header>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-14 bg-white border border-border rounded-xl">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as keyof typeof CATEGORY_OPTIONS)} className="w-full">
+        <TabsList className="grid w-full grid-cols-5 h-14 bg-muted border border-border rounded-xl">
           <TabsTrigger value="food"><Utensils className="w-5 h-5" /></TabsTrigger>
           <TabsTrigger value="transport"><Car className="w-5 h-5" /></TabsTrigger>
           <TabsTrigger value="energy"><Zap className="w-5 h-5" /></TabsTrigger>
@@ -36,153 +85,132 @@ function LogActivityForm() {
           <TabsTrigger value="travel"><Plane className="w-5 h-5" /></TabsTrigger>
         </TabsList>
 
-        <TabsContent value="transport" className="mt-6 focus-visible:outline-none">
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-6">
-              <div className="space-y-6">
-                
+        <form onSubmit={handleLog}>
+          <TabsContent value="transport" className="mt-6 focus-visible:outline-none">
+            <Card className="border-none shadow-sm">
+              <CardContent className="p-6 space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="vehicle" className="text-sm font-medium">Vehicle Type</label>
+                  <label htmlFor="transport-type" className="text-sm font-medium">Vehicle Type</label>
                   <select 
-                    id="vehicle" 
+                    id="transport-type" 
+                    value={activityType}
+                    onChange={(e) => setActivityType(e.target.value)}
                     className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
-                    <option value="gasoline">Gasoline Car</option>
-                    <option value="electric">Electric Vehicle (EV)</option>
-                    <option value="hybrid">Hybrid Car</option>
-                    <option value="bus">Public Bus</option>
-                    <option value="train">Subway / Train</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="distance" className="text-sm font-medium">Distance</label>
-                  <div className="relative">
-                    <Input 
-                      id="distance"
-                      type="text" 
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="0"
-                      className="h-16 text-3xl font-bold pl-4 pr-16 rounded-xl"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      required
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
-                      miles
-                    </span>
-                  </div>
-                </div>
-
-                <Button type="button" onClick={handleLog} className="w-full h-14 text-lg rounded-xl mt-4">
-                  Log Activity
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="food" className="mt-6 focus-visible:outline-none">
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-6">
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label htmlFor="meal" className="text-sm font-medium">Meal Type</label>
-                  <select id="meal" className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="beef">Beef / Lamb Meal</option>
-                    <option value="chicken">Chicken / Fish Meal</option>
-                    <option value="vegetarian">Vegetarian Meal</option>
-                    <option value="vegan">Vegan Meal</option>
+                    {CATEGORY_OPTIONS.transport.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="servings" className="text-sm font-medium">Servings</label>
+                  <label htmlFor="transport-dist" className="text-sm font-medium">Distance</label>
                   <div className="relative">
-                    <Input id="servings" type="text" inputMode="numeric" pattern="[0-9]*" placeholder="1" className="h-16 text-3xl font-bold pl-4 pr-24 rounded-xl" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">meals</span>
+                    <Input id="transport-dist" type="text" inputMode="decimal" placeholder="0" className="h-16 text-3xl font-bold pl-4 pr-16 rounded-xl" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">km</span>
                   </div>
                 </div>
-                <Button type="button" onClick={handleLog} className="w-full h-14 text-lg rounded-xl mt-4">Log Food</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="energy" className="mt-6 focus-visible:outline-none">
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-6">
-              <div className="space-y-6">
+          <TabsContent value="food" className="mt-6 focus-visible:outline-none">
+            <Card className="border-none shadow-sm">
+              <CardContent className="p-6 space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="energyType" className="text-sm font-medium">Energy Source</label>
-                  <select id="energyType" className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="electricity">Electricity (kWh)</option>
-                    <option value="natural_gas">Natural Gas (therms)</option>
-                    <option value="heating_oil">Heating Oil (gallons)</option>
+                  <label htmlFor="food-type" className="text-sm font-medium">Meal Type</label>
+                  <select 
+                    id="food-type" 
+                    value={activityType}
+                    onChange={(e) => setActivityType(e.target.value)}
+                    className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    {CATEGORY_OPTIONS.food.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="energyAmount" className="text-sm font-medium">Usage Amount</label>
+                  <label htmlFor="food-qty" className="text-sm font-medium">Quantity (kg/items)</label>
                   <div className="relative">
-                    <Input id="energyAmount" type="text" inputMode="numeric" pattern="[0-9]*" placeholder="0" className="h-16 text-3xl font-bold pl-4 pr-16 rounded-xl" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">units</span>
+                    <Input id="food-qty" type="text" inputMode="decimal" placeholder="1" className="h-16 text-3xl font-bold pl-4 pr-16 rounded-xl" value={amount} onChange={(e) => setAmount(e.target.value)} required />
                   </div>
                 </div>
-                <Button type="button" onClick={handleLog} className="w-full h-14 text-lg rounded-xl mt-4">Log Energy</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="shopping" className="mt-6 focus-visible:outline-none">
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-6">
-              <div className="space-y-6">
+          <TabsContent value="energy" className="mt-6 focus-visible:outline-none">
+            <Card className="border-none shadow-sm">
+              <CardContent className="p-6 space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="purchaseType" className="text-sm font-medium">Purchase Category</label>
-                  <select id="purchaseType" className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="clothing">Clothing & Apparel</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="furniture">Furniture</option>
-                    <option value="general">General Goods</option>
+                  <label htmlFor="energy-type" className="text-sm font-medium">Energy Source</label>
+                  <select 
+                    id="energy-type" 
+                    value={activityType}
+                    onChange={(e) => setActivityType(e.target.value)}
+                    className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    {CATEGORY_OPTIONS.energy.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="spent" className="text-sm font-medium">Amount Spent</label>
+                  <label htmlFor="energy-qty" className="text-sm font-medium">Usage Amount (kWh)</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">$</span>
-                    <Input id="spent" type="text" inputMode="numeric" pattern="[0-9]*" placeholder="0" className="h-16 text-3xl font-bold pl-8 pr-4 rounded-xl" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+                    <Input id="energy-qty" type="text" inputMode="decimal" placeholder="0" className="h-16 text-3xl font-bold pl-4 pr-16 rounded-xl" value={amount} onChange={(e) => setAmount(e.target.value)} required />
                   </div>
                 </div>
-                <Button type="button" onClick={handleLog} className="w-full h-14 text-lg rounded-xl mt-4">Log Purchase</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="travel" className="mt-6 focus-visible:outline-none">
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-6">
-              <div className="space-y-6">
+          <TabsContent value="shopping" className="mt-6 focus-visible:outline-none">
+            <Card className="border-none shadow-sm">
+              <CardContent className="p-6 space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="flightType" className="text-sm font-medium">Flight Type</label>
-                  <select id="flightType" className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="domestic">Domestic (Short-haul)</option>
-                    <option value="international">International (Long-haul)</option>
+                  <label htmlFor="shopping-type" className="text-sm font-medium">Item Category</label>
+                  <select 
+                    id="shopping-type" 
+                    value={activityType}
+                    onChange={(e) => setActivityType(e.target.value)}
+                    className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    {CATEGORY_OPTIONS.shopping.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="hours" className="text-sm font-medium">Flight Duration</label>
+                  <label htmlFor="shopping-qty" className="text-sm font-medium">Number of Items</label>
                   <div className="relative">
-                    <Input id="hours" type="text" inputMode="numeric" pattern="[0-9]*" placeholder="0" className="h-16 text-3xl font-bold pl-4 pr-16 rounded-xl" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">hours</span>
+                    <Input id="shopping-qty" type="text" inputMode="decimal" placeholder="1" className="h-16 text-3xl font-bold pl-4 pr-16 rounded-xl" value={amount} onChange={(e) => setAmount(e.target.value)} required />
                   </div>
                 </div>
-                <Button type="button" onClick={handleLog} className="w-full h-14 text-lg rounded-xl mt-4">Log Flight</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="travel" className="mt-6 focus-visible:outline-none">
+            <Card className="border-none shadow-sm">
+              <CardContent className="p-6 space-y-6">
+                <div className="space-y-2">
+                  <label htmlFor="travel-type" className="text-sm font-medium">Travel Type</label>
+                  <select 
+                    id="travel-type" 
+                    value={activityType}
+                    onChange={(e) => setActivityType(e.target.value)}
+                    className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    {CATEGORY_OPTIONS.travel.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="travel-qty" className="text-sm font-medium">Distance/Nights</label>
+                  <div className="relative">
+                    <Input id="travel-qty" type="text" inputMode="decimal" placeholder="0" className="h-16 text-3xl font-bold pl-4 pr-16 rounded-xl" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <Button type="submit" disabled={isLoading} className="w-full h-14 text-lg rounded-xl mt-4">
+            {isLoading ? "Logging..." : "Log Activity"}
+          </Button>
+        </form>
       </Tabs>
     </div>
   );
