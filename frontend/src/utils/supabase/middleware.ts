@@ -34,13 +34,7 @@ export async function updateSession(request: NextRequest) {
   // Public paths that do not require authentication
   const isPublicPath = request.nextUrl.pathname.startsWith("/login") || 
                        request.nextUrl.pathname.startsWith("/signup") || 
-                       request.nextUrl.pathname.startsWith("/auth") ||
-                       request.nextUrl.pathname.startsWith("/onboarding") ||
-                       request.nextUrl.pathname === "/" ||
-                       request.nextUrl.pathname.startsWith("/log") ||
-                       request.nextUrl.pathname.startsWith("/insights") ||
-                       request.nextUrl.pathname.startsWith("/goals") ||
-                       request.nextUrl.pathname.startsWith("/profile");
+                       request.nextUrl.pathname.startsWith("/auth");
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
