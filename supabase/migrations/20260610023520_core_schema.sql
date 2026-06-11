@@ -1,7 +1,6 @@
 -- Core Schema Setup
 
--- Ensure the UUID extension is available
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Use native Postgres 13+ gen_random_uuid() for UUIDs
 
 -- Users Table (extends Supabase Auth)
 CREATE TABLE public.users (
@@ -28,7 +27,7 @@ CREATE TRIGGER on_auth_user_created
 
 -- Emission Factors Table (Reference data)
 CREATE TABLE public.emission_factors (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     category TEXT NOT NULL,
     activity_type TEXT NOT NULL,
     co2e_per_unit NUMERIC NOT NULL,
@@ -39,7 +38,7 @@ CREATE TABLE public.emission_factors (
 
 -- Activities Table (User logged activities)
 CREATE TABLE public.activities (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     date DATE NOT NULL,
     category TEXT NOT NULL,
@@ -51,7 +50,7 @@ CREATE TABLE public.activities (
 
 -- Goals Table
 CREATE TABLE public.goals (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     category TEXT NOT NULL,
     target_co2e NUMERIC NOT NULL,
@@ -62,7 +61,7 @@ CREATE TABLE public.goals (
 
 -- Achievements Table
 CREATE TABLE public.achievements (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     badge_type TEXT NOT NULL,
     earned_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -70,7 +69,7 @@ CREATE TABLE public.achievements (
 
 -- Insights Table
 CREATE TABLE public.insights (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     week_start DATE NOT NULL,
     tips_json JSONB NOT NULL,
