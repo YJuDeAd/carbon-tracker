@@ -41,7 +41,7 @@ function LogActivityForm() {
           headers: { "Authorization": `Bearer ${session.access_token}` }
         });
         if (res.ok) {
-          const data: ActivityLog[] = await res.json();
+          const data: {id: string, activity_type: string, co2e_kg: number, date: string, category: string}[] = await res.json();
           setRecentLogs((data || []).slice(0, 5));
         }
       } catch (err) {

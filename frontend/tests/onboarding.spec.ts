@@ -11,7 +11,7 @@ test.describe('Onboarding Flow', () => {
     // Wait slightly for react state
     await page.waitForTimeout(500);
 
-    await page.getByText('Vegetarian', { exact: true }).click();
+    await page.locator('.cursor-pointer', { hasText: /^Vegetarian$/ }).click();
     await expect(page.getByRole('button', { name: 'Continue' })).toBeEnabled();
     await page.getByRole('button', { name: 'Continue' }).click();
 
@@ -29,7 +29,7 @@ test.describe('Onboarding Flow', () => {
 
     // Step 3: Energy
     await expect(page.getByText('Home energy source?')).toBeVisible();
-    await page.getByText('Solar Panels').click();
+    await page.locator('.cursor-pointer', { hasText: /^Solar Panels$/ }).click();
     
     // Finish wizard
     await page.getByRole('button', { name: 'Complete Profile' }).click();

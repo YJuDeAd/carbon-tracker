@@ -9,7 +9,7 @@ test.describe('Log Activity Flow', () => {
     await expect(page.getByText('Vehicle Type')).toBeVisible();
 
     // Select 'Electric Vehicle'
-    await page.getByRole('combobox', { name: 'Select vehicle' }).click();
+    await page.getByRole('combobox').click();
     await page.getByRole('option', { name: 'Electric Vehicle' }).click();
 
     // Enter distance
