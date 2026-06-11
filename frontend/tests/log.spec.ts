@@ -2,6 +2,11 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Log Activity Flow', () => {
   test('logs an activity and returns to dashboard', async ({ page }) => {
+    // Mock the backend API response for logging an activity
+    await page.route('**/activities', async route => {
+      await route.fulfill({ status: 201, body: JSON.stringify({ success: true }) });
+    });
+
     // Navigate to log page
     await page.goto('/log', { waitUntil: 'networkidle' });
 
