@@ -28,7 +28,7 @@ export function CategoryBreakdownChart({ data }: { data: ChartData }) {
             ))}
           </Pie>
           <Tooltip 
-            formatter={(value: number | string | (number | string)[]) => [`${Number(value).toFixed(1)} kg CO₂e`, 'Emissions']}
+            formatter={(value: number | string | readonly (number | string)[] | undefined) => [`${Number(value || 0).toFixed(1)} kg CO₂e`, 'Emissions']}
             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
           />
           <Legend verticalAlign="bottom" height={36}/>
