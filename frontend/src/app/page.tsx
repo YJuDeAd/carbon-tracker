@@ -9,7 +9,7 @@ import { StreakWidget } from "@/components/StreakWidget";
 import { BadgeGrid } from "@/components/BadgeGrid";
 import { createClient } from "@/utils/supabase/client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || `${API_URL}`;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 export default function DashboardPage() {
   const [streak, setStreak] = useState(0);

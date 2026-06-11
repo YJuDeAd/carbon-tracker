@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Car, Zap, Utensils, ShoppingBag, Plane } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || `${API_URL}`;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 const CATEGORY_OPTIONS = {
   food: ["Beef", "Poultry", "Pork", "Fish", "Dairy", "Plant-based Meal"],
