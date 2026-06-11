@@ -21,5 +21,9 @@ test.describe('Dashboard Rendering', () => {
     await expect(page.getByText('Weekly Trend')).toBeVisible();
     const chartContainer = page.locator('.recharts-responsive-container');
     await expect(chartContainer).toBeVisible();
+
+    // Validate Gamification (Streaks & Badges)
+    await expect(page.getByText('Current Streak')).toBeVisible();
+    await expect(page.getByText('Achievements')).toBeVisible();
   });
 });

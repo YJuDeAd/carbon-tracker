@@ -28,7 +28,8 @@ def log_activity(activity: ActivityCreate, user_id: str = Depends(get_current_us
     co2e_per_unit = float(factor["co2e_per_unit"])
     
     # 2. Calculate footprint
-    calculated_co2e_kg = activity.quantity * co2e_per_unit
+    from services.emission_calc import calculate_emission
+    calculated_co2e_kg = calculate_emission(activity.quantity, co2e_per_unit)
     
     # 3. Insert activity
     insert_data = {
