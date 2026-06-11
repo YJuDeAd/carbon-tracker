@@ -133,7 +133,7 @@ export default function GoalsPage() {
             <h3 className="font-bold mb-3 text-primary">New Goal</h3>
             <form onSubmit={handleCreate} className="flex flex-col gap-3">
                 <div className="flex gap-2">
-                    <Select value={category} onValueChange={setCategory}>
+                    <Select value={category} onValueChange={(v) => { if (v) setCategory(v); }}>
                       <SelectTrigger className="flex-1 bg-background">
                         <SelectValue placeholder="Category" />
                       </SelectTrigger>
