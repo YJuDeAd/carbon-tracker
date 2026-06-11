@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { WeeklyTrendChart } from "@/components/WeeklyTrendChart";
-import { Car, Zap, Utensils, ShoppingBag, Plus } from "lucide-react";
+import { Car, Zap, Utensils, ShoppingBag, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { StreakWidget } from "@/components/StreakWidget";
 import { BadgeGrid } from "@/components/BadgeGrid";
 import { createClient } from "@/utils/supabase/client";
@@ -12,37 +13,76 @@ import { createClient } from "@/utils/supabase/client";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [streak, setStreak] = useState(0);
   const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
   useEffect(() => {
     async function loadData() {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-      if (!token) return;
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
       try {
-        const res = await fetch(`${API_URL}/users/me/gamification`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setStreak(data.current_streak || 0);
-          setUnlockedBadges(data.unlocked_badges || []);
+        const [gamRes, dashRes] = await Promise.all([
+          fetch(`${API_URL}/users/me/gamification`, { headers: { "Authorization": `Bearer ${token}` } }),
+          fetch(`${API_URL}/users/me/dashboard`, { headers: { "Authorization": `Bearer ${token}` } })
+        ]);
+
+        if (gamRes.ok) {
+          const gamData = await gamRes.json();
+          setStreak(gamData.current_streak || 0);
+          setUnlockedBadges(gamData.unlocked_badges || []);
+        }
+
+        if (dashRes.ok) {
+          const dashData = await dashRes.json();
+          if (dashData.baseline_score === null) {
+            router.push("/onboarding");
+            return;
+          }
+          setDashboardData(dashData);
         }
       } catch (err) {
-        console.error("Failed to load gamification data", err);
+        console.error("Failed to load data", err);
+      } finally {
+        setLoading(false);
       }
     }
     loadData();
-  }, []);
+  }, [router, supabase]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const footprint = dashboardData ? Math.round(dashboardData.this_week_co2e) : 0;
+  const percentDiff = dashboardData?.percent_diff ? Math.round(dashboardData.percent_diff) : 0;
+  
+  let headerMessage = "Let's track your footprint! 🌿";
+  if (percentDiff < 0) {
+    headerMessage = `You're ${Math.abs(percentDiff)}% below your baseline! 🌿`;
+  } else if (percentDiff > 0) {
+    headerMessage = `You're ${percentDiff}% above your baseline. ⚠️`;
+  } else if (percentDiff === 0 && footprint > 0) {
+    headerMessage = "You're exactly on track with your baseline. 📊";
+  }
 
   return (
     <div className="p-4 space-y-6">
       <header className="pt-8 pb-4">
         <h1 className="text-3xl font-bold text-foreground">Overview</h1>
-        <p className="text-muted-foreground mt-1">You're 15% below your baseline! 🌿</p>
+        <p className="text-muted-foreground mt-1">{headerMessage}</p>
       </header>
 
       {/* Hero Metric */}
@@ -50,7 +90,7 @@ export default function DashboardPage() {
         <CardContent className="p-6">
           <div className="text-sm font-medium opacity-90 mb-2">This Week's Footprint</div>
           <div className="flex items-end gap-2">
-            <span className="text-5xl font-bold">102</span>
+            <span className="text-5xl font-bold">{footprint}</span>
             <span className="text-lg opacity-90 pb-1">kg CO₂e</span>
           </div>
         </CardContent>
@@ -88,7 +128,7 @@ export default function DashboardPage() {
         <h2 className="text-lg font-bold mb-3">Weekly Trend</h2>
         <Card className="shadow-sm">
           <CardContent className="p-0">
-            <WeeklyTrendChart />
+            <WeeklyTrendChart trendData={dashboardData?.weekly_trend} />
           </CardContent>
         </Card>
       </section>

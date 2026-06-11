@@ -2,21 +2,26 @@
 
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-const data = [
-  { day: "Mon", co2: 12 },
-  { day: "Tue", co2: 8 },
-  { day: "Wed", co2: 15 },
-  { day: "Thu", co2: 10 },
-  { day: "Fri", co2: 18 },
-  { day: "Sat", co2: 25 },
-  { day: "Sun", co2: 14 },
-];
+export function WeeklyTrendChart({ trendData }: { trendData?: { date: string; co2e_kg: number }[] }) {
+  const chartData = trendData 
+    ? [...trendData].reverse().map(d => ({
+        day: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }),
+        co2: Math.round(d.co2e_kg)
+      }))
+    : [
+        { day: "Mon", co2: 0 },
+        { day: "Tue", co2: 0 },
+        { day: "Wed", co2: 0 },
+        { day: "Thu", co2: 0 },
+        { day: "Fri", co2: 0 },
+        { day: "Sat", co2: 0 },
+        { day: "Sun", co2: 0 },
+      ];
 
-export function WeeklyTrendChart() {
   return (
     <div className="h-64 w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+        <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="colorCo2" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />

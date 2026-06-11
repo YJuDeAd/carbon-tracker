@@ -16,3 +16,18 @@ class GamificationResponse(BaseModel):
     current_streak: int
     total_logs: int
     unlocked_badges: list[str]
+
+class BaselineRequest(BaseModel):
+    diet: str
+    commute_miles: float
+    energy_source: str
+
+class DailyTrend(BaseModel):
+    date: str
+    co2e_kg: float
+
+class DashboardResponse(BaseModel):
+    this_week_co2e: float
+    baseline_score: float | None
+    percent_diff: float | None
+    weekly_trend: list[DailyTrend]

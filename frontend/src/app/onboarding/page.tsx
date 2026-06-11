@@ -13,10 +13,31 @@ export default function OnboardingPage() {
   const [commute, setCommute] = useState<number[]>([100]);
   const [energy, setEnergy] = useState<string | null>(null);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < 3) setStep(step + 1);
     else {
-      // Typically, submit to backend here.
+      try {
+        const supabase = await import("@/utils/supabase/client").then(m => m.createClient());
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.access_token) {
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+          await fetch(`${API_URL}/users/me/baseline`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({
+              diet: diet || "Average",
+              commute_miles: commute[0],
+              energy_source: energy || "Mixed"
+            })
+          });
+        }
+      } catch (err) {
+        console.error("Failed to save baseline", err);
+      }
       router.push("/");
     }
   };
