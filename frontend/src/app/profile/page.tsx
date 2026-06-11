@@ -9,6 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { User, Bell, Moon, LogOut, Activity, Award, Settings } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || `${API_URL}`;
+
 export default function ProfilePage() {
   const router = useRouter();
   const supabase = createClient();
@@ -19,21 +21,37 @@ export default function ProfilePage() {
   const [metricUnits, setMetricUnits] = useState(true);
   const [userName, setUserName] = useState("Eco Warrior");
   const [userJoined, setUserJoined] = useState("");
+  const [totalLogs, setTotalLogs] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
 
   useEffect(() => {
     setMounted(true);
-    async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        if (user.user_metadata?.name) {
-          setUserName(user.user_metadata.name);
+    async function loadProfile() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const user = session.user;
+      if (user.user_metadata?.name) {
+        setUserName(user.user_metadata.name);
+      }
+      const joinedDate = new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      setUserJoined(`Joined ${joinedDate}`);
+
+      try {
+        const res = await fetch(`${API_URL}/users/me/gamification`, {
+          headers: { "Authorization": `Bearer ${session.access_token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setTotalLogs(data.total_logs || 0);
+          setBestStreak(data.current_streak || 0); // Displaying current streak as best streak for MVP
         }
-        const joinedDate = new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" });
-        setUserJoined(`Joined ${joinedDate}`);
+      } catch (err) {
+        console.error("Failed to load stats", err);
       }
     }
-    getUser();
-  }, [supabase.auth]);
+    loadProfile();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -66,14 +84,14 @@ export default function ProfilePage() {
           <Card className="border-none shadow-sm">
             <CardContent className="p-4 flex flex-col items-center justify-center text-center">
               <Activity className="w-6 h-6 text-blue-500 mb-2" />
-              <div className="text-2xl font-bold">42</div>
+              <div className="text-2xl font-bold">{totalLogs}</div>
               <div className="text-xs text-muted-foreground font-medium">Total Logs</div>
             </CardContent>
           </Card>
           <Card className="border-none shadow-sm">
             <CardContent className="p-4 flex flex-col items-center justify-center text-center">
               <Award className="w-6 h-6 text-yellow-500 mb-2" />
-              <div className="text-2xl font-bold">14</div>
+              <div className="text-2xl font-bold">{bestStreak}</div>
               <div className="text-xs text-muted-foreground font-medium">Best Streak</div>
             </CardContent>
           </Card>

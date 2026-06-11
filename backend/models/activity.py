@@ -11,9 +11,13 @@ class ActivityCreate(BaseModel):
     quantity: float = Field(..., gt=0, description="Quantity of the activity (e.g. miles, kWh, meals)")
     notes: str | None = None
 
-class ActivityResponse(ActivityCreate):
+class ActivityResponse(BaseModel):
     id: str
     user_id: str
+    date: date
+    category: Category
+    activity_type: str
     co2e_kg: float
+    notes: str | None = None
     
     model_config = ConfigDict(from_attributes=True)

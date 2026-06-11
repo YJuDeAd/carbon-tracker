@@ -12,6 +12,8 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || `${API_URL}`;
+
 export default function GoalsPage() {
   const supabase = createClient();
   const [goals, setGoals] = useState<any[]>([]);
@@ -37,7 +39,7 @@ export default function GoalsPage() {
       setToken(userToken);
 
       const headers = { "Authorization": `Bearer ${userToken}` };
-      const res = await fetch("http://127.0.0.1:8000/goals", { headers });
+      const res = await fetch(`${API_URL}/goals`, { headers });
       if (res.ok) {
         const data = await res.json();
         
@@ -57,7 +59,7 @@ export default function GoalsPage() {
   const handleToggle = async (id: string, completed: boolean) => {
     if (!token) return;
     try {
-        const res = await fetch(`http://127.0.0.1:8000/goals/${id}`, {
+        const res = await fetch(`${API_URL}/goals/${id}`, {
             method: "PATCH",
             headers: { 
                 "Authorization": `Bearer ${token}`,
@@ -90,7 +92,7 @@ export default function GoalsPage() {
     }
 
     try {
-        const res = await fetch(`http://127.0.0.1:8000/goals`, {
+        const res = await fetch(`${API_URL}/goals`, {
             method: "POST",
             headers: { 
                 "Authorization": `Bearer ${token}`,

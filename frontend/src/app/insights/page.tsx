@@ -4,14 +4,12 @@ import { useEffect, useState } from "react";
 import { InsightCard } from "@/components/InsightCard";
 import { CategoryBreakdownChart } from "@/components/CategoryBreakdownChart";
 import { Card, CardContent } from "@/components/ui/card";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/client";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:54321",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy"
-);
+const API_URL = process.env.NEXT_PUBLIC_API_URL || `${API_URL}`;
 
 export default function InsightsPage() {
+  const supabase = createClient();
   const [tips, setTips] = useState<string[]>([]);
   const [chartData, setChartData] = useState<{name: string, value: number}[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,14 +34,14 @@ export default function InsightsPage() {
         const headers = { "Authorization": `Bearer ${token}` };
 
         // Fetch insights
-        fetch("http://127.0.0.1:8000/insights", { headers })
+        fetch(`${API_URL}/insights`, { headers })
           .then(res => res.json())
           .then(data => {
             if (data && data.tips_json) setTips(data.tips_json);
           }).catch(console.error);
 
         // Fetch activities
-        fetch("http://127.0.0.1:8000/activities", { headers })
+        fetch(`${API_URL}/activities`, { headers })
           .then(res => res.json())
           .then(acts => {
             if (Array.isArray(acts)) {

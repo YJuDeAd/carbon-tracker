@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from core.database import supabase
 from core.security import get_current_user_id
 from models.activity import ActivityCreate, ActivityResponse
+from services.gamification_service import check_and_award_badges
 
 router = APIRouter(prefix="/activities", tags=["activities"])
 
@@ -24,7 +25,7 @@ def log_activity(activity: ActivityCreate, user_id: str = Depends(get_current_us
         )
         
     factor = factor_resp.data[0]
-    co2e_per_unit = factor["co2e_per_unit"]
+    co2e_per_unit = float(factor["co2e_per_unit"])
     
     # 2. Calculate footprint
     calculated_co2e_kg = activity.quantity * co2e_per_unit
@@ -39,16 +40,21 @@ def log_activity(activity: ActivityCreate, user_id: str = Depends(get_current_us
         "notes": activity.notes
     }
     
-    insert_resp = supabase.table("activities").insert(insert_data).execute()
-    if not insert_resp.data:
-        raise HTTPException(status_code=500, detail="Failed to insert activity")
+    try:
+        insert_resp = supabase.table("activities").insert(insert_data).execute()
+        if not insert_resp.data:
+            raise HTTPException(status_code=500, detail="Failed to insert activity")
+            
+        check_and_award_badges(user_id)
         
-    return insert_resp.data[0]
+        return insert_resp.data[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 @router.get("", response_model=list[ActivityResponse])
 def get_activities(user_id: str = Depends(get_current_user_id)):
     """
     Fetch all logged activities for the current user.
     """
-    response = supabase.table("activities").select("*").eq("user_id", user_id).order("date", desc=True).execute()
+    response = supabase.table("activities").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
     return response.data

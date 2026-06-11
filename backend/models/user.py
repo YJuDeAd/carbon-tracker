@@ -11,3 +11,8 @@ class UserResponse(UserBase):
     created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
+
+class GamificationResponse(BaseModel):
+    current_streak: int
+    total_logs: int
+    unlocked_badges: list[str]

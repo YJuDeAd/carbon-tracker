@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: carbon-tracker-api
+    env: python
+    rootDir: backend
+    buildCommand: pip install uv && uv sync
+    startCommand: uv run uvicorn main:app --host 0.0.0.0 --port 8000
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false

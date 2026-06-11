@@ -1,11 +1,43 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
+
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { WeeklyTrendChart } from "@/components/WeeklyTrendChart";
 import { Car, Zap, Utensils, ShoppingBag, Plus } from "lucide-react";
 import Link from "next/link";
 import { StreakWidget } from "@/components/StreakWidget";
 import { BadgeGrid } from "@/components/BadgeGrid";
+import { createClient } from "@/utils/supabase/client";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || `${API_URL}`;
 
 export default function DashboardPage() {
+  const [streak, setStreak] = useState(0);
+  const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function loadData() {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${API_URL}/users/me/gamification`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStreak(data.current_streak || 0);
+          setUnlockedBadges(data.unlocked_badges || []);
+        }
+      } catch (err) {
+        console.error("Failed to load gamification data", err);
+      }
+    }
+    loadData();
+  }, []);
+
   return (
     <div className="p-4 space-y-6">
       <header className="pt-8 pb-4">
@@ -24,7 +56,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <StreakWidget streak={3} />
+      <StreakWidget streak={streak} />
 
       {/* Quick Log Grid */}
       <section>
@@ -61,7 +93,7 @@ export default function DashboardPage() {
         </Card>
       </section>
 
-      <BadgeGrid />
+      <BadgeGrid unlockedBadges={unlockedBadges} />
       
       {/* Spacer for bottom nav */}
       <div className="h-4"></div>
