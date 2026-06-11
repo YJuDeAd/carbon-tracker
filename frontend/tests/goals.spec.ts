@@ -7,19 +7,21 @@ test.describe('Goals Page', () => {
 
     // Wait for page to load
     await expect(page.locator('h1', { hasText: /^Goals$/ })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Set New Goal' })).toBeVisible();
+    
+    // Validate the inline form renders
+    await expect(page.getByRole('heading', { name: 'New Goal' })).toBeVisible();
+    await expect(page.getByPlaceholder('Target (kg CO₂e)')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add Goal' })).toBeVisible();
 
-    // Click the Set New Goal button
-    await page.getByRole('button', { name: 'Set New Goal' }).click();
+    // Fill out the form
+    await page.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Food' }).click();
+    await page.getByPlaceholder('Target (kg CO₂e)').fill('100');
 
-    // Validate the modal opens
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByText('Target (kg CO₂e)')).toBeVisible();
-    await expect(page.getByText('Category')).toBeVisible();
-    await expect(page.getByText('Deadline')).toBeVisible();
+    // Click the Add Goal button
+    await page.getByRole('button', { name: 'Add Goal' }).click();
 
-    // Close the modal
-    await page.keyboard.press('Escape');
-    await expect(page.getByRole('dialog')).not.toBeVisible();
+    // Validate that the goals list exists (could be empty or not, but it shouldn't crash)
+    await expect(page.getByText('Your Challenges')).toBeVisible();
   });
 });
