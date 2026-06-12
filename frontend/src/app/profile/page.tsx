@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { User, Bell, Moon, LogOut, Activity, Award, Settings } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 export default function ProfilePage() {
   const router = useRouter();

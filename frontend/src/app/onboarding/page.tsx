@@ -21,7 +21,7 @@ export default function OnboardingPage() {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.access_token) {
-          const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+          const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
           await fetch(`${API_URL}/users/me/baseline`, {
             method: "PUT",
             headers: {
