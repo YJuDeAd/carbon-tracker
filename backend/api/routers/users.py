@@ -68,7 +68,8 @@ def get_dashboard_stats(user_id: str = Depends(get_current_user_id)):
     if not user_resp.data:
         raise HTTPException(status_code=404, detail="User not found")
         
-    baseline_score = user_resp.data[0].get("baseline_score")
+    raw_baseline = user_resp.data[0].get("baseline_score")
+    baseline_score = float(raw_baseline) if raw_baseline is not None else 0.0
     
     # Get activities from the last 7 days
     now = datetime.utcnow()

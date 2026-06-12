@@ -29,6 +29,7 @@ export default function DashboardPage() {
         return;
       }
 
+      let shouldRedirect = false;
       try {
         const [gamRes, dashRes] = await Promise.all([
           fetch(`${API_URL}/users/me/gamification`, { headers: { "Authorization": `Bearer ${token}` } }),
@@ -44,15 +45,19 @@ export default function DashboardPage() {
         if (dashRes.ok) {
           const dashData = await dashRes.json();
           if (!dashData.baseline_score || dashData.baseline_score === 0) {
-            router.push("/onboarding");
-            return;
+            shouldRedirect = true;
+          } else {
+            setDashboardData(dashData);
           }
-          setDashboardData(dashData);
         }
       } catch (err) {
         console.error("Failed to load data", err);
       } finally {
-        setLoading(false);
+        if (shouldRedirect) {
+          router.push("/onboarding");
+        } else {
+          setLoading(false);
+        }
       }
     }
     loadData();
