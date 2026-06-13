@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 
 export function InsightCard({ tips }: { tips: string[] }) {
-  const router = useRouter();
+  // router unused
 
   if (!tips || tips.length === 0) return null;
 

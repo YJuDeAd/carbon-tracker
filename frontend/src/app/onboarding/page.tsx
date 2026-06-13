@@ -38,7 +38,7 @@ export default function OnboardingPage() {
       } catch (err) {
         console.error("Failed to save baseline", err);
       }
-      router.push("/");
+      router.push("/dashboard");
     }
   };
 

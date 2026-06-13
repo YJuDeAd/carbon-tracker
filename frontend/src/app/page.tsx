@@ -1,216 +1,180 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { WeeklyTrendChart } from "@/components/WeeklyTrendChart";
-import { Car, Zap, Utensils, ShoppingBag, Plus, Loader2, Share2, Download } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { StreakWidget } from "@/components/StreakWidget";
-import { BadgeGrid } from "@/components/BadgeGrid";
+import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { ShareSummaryCard } from "@/components/ShareSummaryCard";
-import { Drawer, DrawerContent, DrawerTrigger, DrawerTitle, DrawerDescription, DrawerHeader } from "@/components/ui/drawer";
-import * as htmlToImage from "html-to-image";
-import { useRef } from "react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Leaf, Activity, Sparkles, Target, ArrowRight, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-import { API_URL } from "@/lib/config";
-
-export default function DashboardPage() {
+export default function LandingPage() {
   const router = useRouter();
-  const [streak, setStreak] = useState(0);
-  const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
-  const [dashboardData, setDashboardData] = useState<{this_week_co2e: number, percent_diff: number, weekly_trend: {date: string, co2e_kg: number}[]} | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("Eco Warrior");
-  const shareCardRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
 
-  useEffect(() => {
-    async function loadData() {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      let shouldRedirect = false;
-      try {
-        if (session.user.user_metadata?.name) {
-          setUserName(session.user.user_metadata.name);
-        }
-        
-        const [gamRes, dashRes] = await Promise.all([
-          fetch(`${API_URL}/users/me/gamification`, { headers: { "Authorization": `Bearer ${token}` } }),
-          fetch(`${API_URL}/users/me/dashboard`, { headers: { "Authorization": `Bearer ${token}` } })
-        ]);
-
-        if (gamRes.ok) {
-          const gamData = await gamRes.json();
-          setStreak(gamData.current_streak || 0);
-          setUnlockedBadges(gamData.unlocked_badges || []);
-        }
-
-        if (dashRes.ok) {
-          const dashData = await dashRes.json();
-          if (!dashData.baseline_score || dashData.baseline_score === 0) {
-            shouldRedirect = true;
-          } else {
-            setDashboardData(dashData);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to load data", err);
-      } finally {
-        if (shouldRedirect) {
-          router.push("/onboarding");
-        } else {
-          setLoading(false);
-        }
-      }
-    }
-    loadData();
-  }, [router, supabase]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  const footprint = dashboardData ? Math.round(dashboardData.this_week_co2e) : 0;
-  const percentDiff = dashboardData?.percent_diff ? Math.round(dashboardData.percent_diff) : 0;
-  
-  let headerMessage = "Let's track your footprint! 🌿";
-  if (percentDiff < 0) {
-    headerMessage = `You're ${Math.abs(percentDiff)}% below your baseline! 🌿`;
-  } else if (percentDiff > 0) {
-    headerMessage = `You're ${percentDiff}% above your baseline. ⚠️`;
-  } else if (percentDiff === 0 && footprint > 0) {
-    headerMessage = "You're exactly on track with your baseline. 📊";
-  }
-
-  const handleShare = async () => {
-    if (!shareCardRef.current) return;
+  const handleDemoLogin = async () => {
+    setIsDemoLoading(true);
     try {
-      const dataUrl = await htmlToImage.toPng(shareCardRef.current, { cacheBust: true, pixelRatio: 2 });
-      
-      try {
-        const res = await fetch(dataUrl);
-        const blob = await res.blob();
-        const file = new File([blob], "carbon-score.png", { type: "image/png" });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: 'My Carbon Footprint',
-            text: 'Check out my progress on Carbon Footprint Tracker!',
-            files: [file],
-          });
-          return;
-        }
-      } catch {
-        // Fallback to download
+      const { error } = await supabase.auth.signInWithPassword({
+        email: "demo@carbontracker.app",
+        password: "Demo1234!"
+      });
+      if (error) {
+        alert("Demo login failed: " + error.message);
+        setIsDemoLoading(false);
+      } else {
+        router.push("/dashboard");
+        router.refresh();
       }
-
-      const link = document.createElement("a");
-      link.download = "carbon-score.png";
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error("Failed to generate image", err);
+    } catch (e) {
+      console.error(e);
+      setIsDemoLoading(false);
     }
   };
 
   return (
-    <div className="p-4 space-y-6">
-      <header className="pt-8 pb-4">
-        <h1 className="text-3xl font-bold text-foreground">Overview</h1>
-        <p className="text-muted-foreground mt-1">{headerMessage}</p>
+    <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20">
+      
+      {/* Navbar */}
+      <header className="px-6 py-4 flex justify-between items-center max-w-4xl mx-auto w-full">
+        <div className="flex items-center gap-2 text-primary font-bold text-xl">
+          <Leaf className="w-6 h-6" />
+          <span>CarbonTracker</span>
+        </div>
+        <Link href="/login" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "font-semibold")}>
+          Sign In
+        </Link>
       </header>
 
-      {/* Hero Metric */}
-      <Card className="bg-primary text-primary-foreground border-none shadow-md">
-        <CardContent className="p-6 flex justify-between items-end">
-          <div>
-            <div className="text-sm font-medium opacity-90 mb-2">This Week&apos;s Footprint</div>
-            <div className="flex items-end gap-2">
-              <span className="text-5xl font-bold">{footprint}</span>
-              <span className="text-lg opacity-90 pb-1">kg CO₂e</span>
+      <main className="flex-1 w-full max-w-4xl mx-auto px-6 pb-20">
+        
+        {/* Hero Section */}
+        <section className="py-20 flex flex-col items-center text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary/10 text-primary hover:bg-primary/20">
+            Open Source Sustainability
+          </div>
+          <h1 className="text-5xl md:text-6xl font-black tracking-tight text-foreground">
+            Understand, track, and reduce your <span className="text-primary bg-primary/10 px-2 rounded-lg">carbon footprint</span>
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
+            Take control of your environmental impact with personalized insights, daily logging, and community goals. Small changes make a big difference.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto pt-4">
+            <Link href="/login" className={cn(buttonVariants({ size: "lg" }), "rounded-full px-8 font-bold text-base h-12 shadow-lg shadow-primary/25")}>
+              Get Started <ArrowRight className="ml-2 w-4 h-4" />
+            </Link>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="rounded-full px-8 font-bold text-base h-12 border-2"
+              onClick={handleDemoLogin}
+              disabled={isDemoLoading}
+            >
+              {isDemoLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+              View Demo
+            </Button>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-16">
+          <h2 className="text-3xl font-bold text-center mb-10">Everything you need to track impact</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="border-none shadow-sm bg-secondary/30 hover:bg-secondary/50 transition-colors">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center mb-4 text-primary">
+                  <Leaf className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-xl mb-2">Baseline Calculator</h3>
+                <p className="text-muted-foreground">Discover your starting point with our quick onboarding assessment.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm bg-secondary/30 hover:bg-secondary/50 transition-colors">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-4 text-blue-600 dark:text-blue-400">
+                  <Activity className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-xl mb-2">Activity Logging</h3>
+                <p className="text-muted-foreground">Log daily emissions across food, transport, energy, and more.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm bg-secondary/30 hover:bg-secondary/50 transition-colors">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-4 text-purple-600 dark:text-purple-400">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-xl mb-2">AI Insights</h3>
+                <p className="text-muted-foreground">Get personalized, actionable tips powered by Groq and LLaMA 3.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm bg-secondary/30 hover:bg-secondary/50 transition-colors">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center mb-4 text-orange-600 dark:text-orange-400">
+                  <Target className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-xl mb-2">Goal Tracking</h3>
+                <p className="text-muted-foreground">Set emission reduction goals and climb the community leaderboard.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <section className="py-16">
+          <div className="bg-primary/5 border border-primary/10 rounded-3xl p-8 md:p-12">
+            <h2 className="text-3xl font-bold text-center mb-10">How it works</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-background border-2 border-primary/20 flex items-center justify-center text-2xl font-black text-primary shadow-sm">
+                  1
+                </div>
+                <h3 className="font-bold text-lg">Log your activities</h3>
+                <p className="text-sm text-muted-foreground">Quickly record your meals, commutes, and energy usage in seconds.</p>
+              </div>
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-background border-2 border-primary/20 flex items-center justify-center text-2xl font-black text-primary shadow-sm">
+                  2
+                </div>
+                <h3 className="font-bold text-lg">Get AI insights</h3>
+                <p className="text-sm text-muted-foreground">Our AI analyzes your patterns and generates personalized reduction tips.</p>
+              </div>
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-background border-2 border-primary/20 flex items-center justify-center text-2xl font-black text-primary shadow-sm">
+                  3
+                </div>
+                <h3 className="font-bold text-lg">Reduce your footprint</h3>
+                <p className="text-sm text-muted-foreground">Act on insights, hit your goals, and track your progress over time.</p>
+              </div>
             </div>
           </div>
-          
-          <Drawer>
-            <DrawerTrigger asChild>
-              <button aria-expanded={false} aria-controls="share-drawer" className="flex items-center space-x-2 bg-primary-foreground text-primary px-3 py-2 rounded-full text-sm font-bold shadow-sm active:scale-95 transition-transform">
-                <Share2 className="w-4 h-4" />
-                <span>Share</span>
-              </button>
-            </DrawerTrigger>
-            <DrawerContent id="share-drawer">
-              <DrawerHeader className="text-left">
-                <DrawerTitle>Share Your Progress</DrawerTitle>
-                <DrawerDescription>Inspire others by sharing your footprint.</DrawerDescription>
-              </DrawerHeader>
-              <div className="flex flex-col items-center justify-center p-4 space-y-6">
-                <div className="flex justify-center w-full overflow-hidden rounded-3xl">
-                  <ShareSummaryCard ref={shareCardRef} footprint={footprint} streak={streak} userName={userName} />
-                </div>
-                <button 
-                  onClick={handleShare}
-                  className="w-full max-w-[350px] bg-primary text-primary-foreground font-bold py-3 rounded-xl flex items-center justify-center space-x-2"
-                >
-                  <Download className="w-5 h-5" />
-                  <span>Save or Share Image</span>
-                </button>
-              </div>
-            </DrawerContent>
-          </Drawer>
-        </CardContent>
-      </Card>
+        </section>
 
-      <StreakWidget streak={streak} />
+      </main>
 
-      {/* Quick Log Grid */}
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold">Quick Log</h2>
-          <Link href="/log" className="text-sm text-primary font-medium flex items-center">
-            View All <Plus className="w-4 h-4 ml-1" />
-          </Link>
+      {/* Footer */}
+      <footer className="w-full border-t border-border mt-auto">
+        <div className="max-w-4xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-muted-foreground font-medium">
+            <Leaf className="w-5 h-5" />
+            <span>CarbonTracker</span>
+          </div>
+          <a 
+            href="https://github.com/YJuDeAd/carbon-tracker" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+          >
+            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            View on GitHub
+          </a>
         </div>
-        <div className="grid grid-cols-4 gap-3">
-          {[
-            { icon: Utensils, label: "Food", category: "food", color: "bg-orange-100 text-orange-600" },
-            { icon: Car, label: "Drive", category: "transport", color: "bg-blue-100 text-blue-600" },
-            { icon: Zap, label: "Energy", category: "energy", color: "bg-yellow-100 text-yellow-600" },
-            { icon: ShoppingBag, label: "Shop", category: "shopping", color: "bg-purple-100 text-purple-600" },
-          ].map((item, i) => (
-            <Link href={`/log?category=${item.category}`} key={i} className="flex flex-col items-center gap-2" aria-label={`Log ${item.label} activity`}>
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${item.color}`}>
-                <item.icon className="w-6 h-6" />
-              </div>
-              <span className="text-xs font-medium text-muted-foreground">{item.label}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+      </footer>
 
-      {/* Weekly Trend */}
-      <section>
-        <h2 className="text-lg font-bold mb-3">Weekly Trend</h2>
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <WeeklyTrendChart trendData={dashboardData?.weekly_trend} />
-          </CardContent>
-        </Card>
-      </section>
-
-      <BadgeGrid unlockedBadges={unlockedBadges} />
-      
-      {/* Spacer for bottom nav */}
-      <div className="h-4"></div>
     </div>
   );
 }

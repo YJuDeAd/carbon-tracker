@@ -105,7 +105,7 @@ function LogActivityForm() {
         const errorText = await response.text();
         throw new Error(`Failed to log activity: ${errorText}`);
       }
-      router.push("/");
+      router.push("/dashboard");
     } catch (error) {
       console.error(error);
       alert(error instanceof Error ? error.message : String(error));

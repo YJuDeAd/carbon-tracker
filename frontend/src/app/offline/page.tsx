@@ -17,7 +17,7 @@ export default function OfflinePage() {
           It looks like you&apos;ve lost your internet connection. We can&apos;t reach the servers right now.
         </p>
       </div>
-      <Link href="/" className={cn(buttonVariants({ size: "lg" }), "rounded-full px-8 py-6 text-lg")}>
+      <Link href="/dashboard" className={cn(buttonVariants({ size: "lg" }), "rounded-full px-8 py-6 text-lg")}>
         Try Again
       </Link>
     </div>

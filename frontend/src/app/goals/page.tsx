@@ -48,8 +48,8 @@ export default function GoalsPage() {
       const headers = { "Authorization": `Bearer ${userToken}` };
       
       const [resGoals, resLeaderboard] = await Promise.all([
-        fetch(`${API_URL}/goals`, { headers }).catch(e => null),
-        fetch(`${API_URL}/users/leaderboard`, { headers }).catch(e => null)
+        fetch(`${API_URL}/goals`, { headers }).catch(() => null),
+        fetch(`${API_URL}/users/leaderboard`, { headers }).catch(() => null)
       ]);
       
       if (resGoals && resGoals.ok) {
