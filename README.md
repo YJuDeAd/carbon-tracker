@@ -96,18 +96,18 @@ User Action -> Frontend (Next.js)
 
 ## Features
 
-### Phase 1: MVP - Completed
+### Phase 1: MVP 
 - **Baseline Calculator:** An intuitive onboarding wizard capturing diet, commute distance, and home energy source to establish a starting footprint.
 - **Activity Logging:** Categorized logging flows (Food, Transport, Energy, Shopping, Travel) optimized for fast mobile data entry.
 - **Home Dashboard:** A centralized view featuring the user's weekly footprint metric and an interactive Recharts trend graph.
 - **Secure Authentication:** Fully integrated Supabase Auth with Server-Side Rendering middleware protecting private routes.
 
-### Phase 2: Core Product - Up Next
+### Phase 2: Core Product
 - **AI Insights Engine:** Groq (`llama-3-8b-instruct`) generating hyper-personalized, actionable reduction tips based on logging history.
 - **Goal Setting & Streaks:** Gamification elements focusing on positive reinforcement and consistency.
 - **Full CI/CD Deployment:** Automated deployments to Vercel (frontend) and Render (backend).
 
-### Phase 3: Growth - Planned
+### Phase 3: Growth
 - **Community Challenges:** Collaborative reduction goals and leaderboards.
 - **Education Hub:** Micro-lessons on carbon literacy and sustainability.
 - **PWA Capabilities:** Offline support and push notifications.
