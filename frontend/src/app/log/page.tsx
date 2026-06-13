@@ -12,7 +12,7 @@ import { createClient } from "@/utils/supabase/client";
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 const CATEGORY_OPTIONS = {
-  food: ["Beef", "Poultry", "Pork", "Fish", "Dairy", "Plant-based Meal"],
+  food: ["Poultry", "Pork", "Fish", "Dairy", "Plant-based Meal"],
   transport: ["Petrol Car", "Diesel Car", "Electric Car", "Hybrid Car", "Bus", "Train", "Bicycle/Walking"],
   energy: ["Grid Electricity", "Natural Gas", "Heating Oil", "Renewable Energy"],
   shopping: ["Clothing Item", "Electronics", "Furniture"],
