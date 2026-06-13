@@ -2,7 +2,8 @@
 
 import { Leaf } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function OfflinePage() {
   return (
@@ -16,11 +17,9 @@ export default function OfflinePage() {
           It looks like you've lost your internet connection. We can't reach the servers right now.
         </p>
       </div>
-      <Button asChild className="rounded-full px-8 py-6 text-lg">
-        <Link href="/">
-          Try Again
-        </Link>
-      </Button>
+      <Link href="/" className={cn(buttonVariants({ size: "lg" }), "rounded-full px-8 py-6 text-lg")}>
+        Try Again
+      </Link>
     </div>
   );
 }

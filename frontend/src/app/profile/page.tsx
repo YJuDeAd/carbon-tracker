@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { User, Bell, Moon, LogOut, Activity, Award, Settings, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
@@ -112,9 +113,9 @@ export default function ProfilePage() {
               <h3 className="font-bold text-lg">Education Hub</h3>
               <p className="text-primary-foreground/80 text-sm">Micro-lessons and terminology</p>
             </div>
-            <Button asChild variant="secondary" className="bg-background text-primary hover:bg-background/90 font-bold px-6">
-              <Link href="/education">Explore</Link>
-            </Button>
+            <Link href="/education" className={cn(buttonVariants({ variant: "secondary" }), "bg-background text-primary hover:bg-background/90 font-bold px-6")}>
+              Explore
+            </Link>
           </CardContent>
         </Card>
       </section>
