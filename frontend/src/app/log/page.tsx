@@ -31,6 +31,12 @@ function LogActivityForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [recentLogs, setRecentLogs] = useState<{id: string, activity_type: string, co2e_kg: number, date: string, category: string}[]>([]);
 
+  // OSM Auto-calc state
+  const [useAutoCalc, setUseAutoCalc] = useState(false);
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
+  const [isCalculating, setIsCalculating] = useState(false);
+
   useEffect(() => {
     async function fetchRecent() {
       const { data: { session } } = await supabase.auth.getSession();
@@ -88,6 +94,27 @@ function LogActivityForm() {
     }
   };
 
+  const handleSuggestDistance = async () => {
+    if (!origin || !destination) return;
+    setIsCalculating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${API_URL}/activities/suggest-transport?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&vehicle_type=${encodeURIComponent(activityType)}`, {
+        headers: { "Authorization": `Bearer ${session?.access_token}` }
+      });
+      if (!res.ok) {
+        throw new Error("Failed to calculate distance");
+      }
+      const data = await res.json();
+      setAmount(data.distance_km.toFixed(1));
+      setUseAutoCalc(false);
+    } catch {
+      alert("Could not calculate distance. Please try again or enter manually.");
+    } finally {
+      setIsCalculating(false);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background p-4">
       <header className="pt-8 pb-6">
@@ -101,6 +128,7 @@ function LogActivityForm() {
           setActiveTab(newTab);
           setActivityType(CATEGORY_OPTIONS[newTab][0]);
           setAmount("");
+          setUseAutoCalc(false);
         }} 
         className="w-full"
       >
@@ -127,12 +155,32 @@ function LogActivityForm() {
                     {CATEGORY_OPTIONS.transport.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="transport-dist" className="text-sm font-medium">Distance</label>
-                  <div className="relative">
-                    <Input id="transport-dist" type="text" inputMode="decimal" placeholder="0" className="h-16 text-3xl font-bold pl-4 pr-16 rounded-xl" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">km</span>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <label htmlFor="transport-dist" className="text-sm font-medium">Distance</label>
+                    <button 
+                      type="button" 
+                      onClick={() => setUseAutoCalc(!useAutoCalc)}
+                      className="text-xs text-primary font-bold bg-primary/10 px-3 py-1 rounded-full hover:bg-primary/20 transition-colors"
+                    >
+                      {useAutoCalc ? "Enter manually" : "Auto-calculate"}
+                    </button>
                   </div>
+                  
+                  {useAutoCalc ? (
+                    <div className="space-y-3 bg-muted/50 p-4 rounded-xl border border-border">
+                      <Input placeholder="Origin (e.g. London)" value={origin} onChange={(e) => setOrigin(e.target.value)} className="h-12 bg-background rounded-xl" />
+                      <Input placeholder="Destination (e.g. Paris)" value={destination} onChange={(e) => setDestination(e.target.value)} className="h-12 bg-background rounded-xl" />
+                      <Button type="button" onClick={handleSuggestDistance} disabled={isCalculating || !origin || !destination} className="w-full h-12 rounded-xl">
+                        {isCalculating ? "Calculating..." : "Suggest Distance"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <Input id="transport-dist" type="text" inputMode="decimal" placeholder="0" className="h-16 text-3xl font-bold pl-4 pr-16 rounded-xl" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">km</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
