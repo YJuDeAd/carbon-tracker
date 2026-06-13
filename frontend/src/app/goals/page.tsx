@@ -21,6 +21,7 @@ export default function GoalsPage() {
   const [leaderboard, setLeaderboard] = useState<{name: string, score: number, rank: number, is_current_user: boolean, color: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
+  const [currentUserName, setCurrentUserName] = useState("Eco Warrior");
 
   // Form states
   const [target, setTarget] = useState("");
@@ -32,6 +33,10 @@ export default function GoalsPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const userToken = session?.access_token;
+      
+      if (session?.user?.user_metadata?.name) {
+          setCurrentUserName(session.user.user_metadata.name);
+      }
       
       if (!userToken) {
           setGoals([{ id: "1", target_co2e: 50, current_co2e: 20, category: "food", deadline: "2026-12-31", status: "active" }]);
@@ -235,7 +240,9 @@ export default function GoalsPage() {
                     <div key={i} className="flex items-center justify-between p-4">
                       <div className="flex items-center space-x-3">
                         <div className={`font-black text-lg w-6 text-center ${user.color}`}>#{user.rank}</div>
-                        <span className={cn("font-medium text-sm", user.is_current_user && "font-bold text-blue-600")}>{user.name}</span>
+                        <span className={cn("font-medium text-sm", user.is_current_user && "font-bold text-blue-600")}>
+                          {user.is_current_user ? `${currentUserName} (You)` : user.name}
+                        </span>
                       </div>
                       <div className="font-bold text-sm">{user.score} kg CO₂e</div>
                     </div>
