@@ -27,7 +27,7 @@ export const ShareSummaryCard = forwardRef<HTMLDivElement, ShareSummaryCardProps
             <span className="font-black tracking-tight text-lg">CarbonTracker</span>
           </div>
           <h2 className="text-3xl font-black pt-4 leading-tight">
-            I'm taking action for the planet.
+            I&apos;m taking action for the planet.
           </h2>
         </div>
 

@@ -110,7 +110,7 @@ export default function DashboardPage() {
           });
           return;
         }
-      } catch(e) {
+      } catch {
         // Fallback to download
       }
 

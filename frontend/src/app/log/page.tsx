@@ -28,7 +28,6 @@ function LogActivityForm() {
   const [activeTab, setActiveTab] = useState<keyof typeof CATEGORY_OPTIONS>((categoryParam && categoryParam in CATEGORY_OPTIONS ? categoryParam as keyof typeof CATEGORY_OPTIONS : "transport"));
   const [activityType, setActivityType] = useState(CATEGORY_OPTIONS[activeTab][0]);
   const [amount, setAmount] = useState("");
-  const [factors, setFactors] = useState<{activity_type: string, unit: string}[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [recentLogs, setRecentLogs] = useState<{id: string, activity_type: string, co2e_kg: number, date: string, category: string}[]>([]);
 
@@ -49,15 +48,7 @@ function LogActivityForm() {
       }
     }
     fetchRecent();
-  }, []);
-
-  // Reset activity type when tab changes
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setActivityType(CATEGORY_OPTIONS[activeTab as keyof typeof CATEGORY_OPTIONS][0]);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAmount("");
-  }, [activeTab]);
+  }, [supabase.auth]);
 
   const handleLog = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +94,16 @@ function LogActivityForm() {
         <h1 className="text-3xl font-bold text-foreground">Log Activity</h1>
       </header>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as keyof typeof CATEGORY_OPTIONS)} className="w-full">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={(v) => {
+          const newTab = v as keyof typeof CATEGORY_OPTIONS;
+          setActiveTab(newTab);
+          setActivityType(CATEGORY_OPTIONS[newTab][0]);
+          setAmount("");
+        }} 
+        className="w-full"
+      >
         <TabsList className="grid w-full grid-cols-5 h-14 bg-muted border border-border rounded-xl">
           <TabsTrigger value="food"><Utensils className="w-5 h-5" /></TabsTrigger>
           <TabsTrigger value="transport"><Car className="w-5 h-5" /></TabsTrigger>

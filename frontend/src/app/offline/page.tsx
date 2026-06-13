@@ -12,9 +12,9 @@ export default function OfflinePage() {
         <Leaf className="w-12 h-12" />
       </div>
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground">You're Offline</h1>
+        <h1 className="text-3xl font-bold text-foreground">You&apos;re Offline</h1>
         <p className="text-muted-foreground max-w-sm mx-auto">
-          It looks like you've lost your internet connection. We can't reach the servers right now.
+          It looks like you&apos;ve lost your internet connection. We can&apos;t reach the servers right now.
         </p>
       </div>
       <Link href="/" className={cn(buttonVariants({ size: "lg" }), "rounded-full px-8 py-6 text-lg")}>

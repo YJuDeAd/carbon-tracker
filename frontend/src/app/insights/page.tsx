@@ -60,7 +60,7 @@ export default function InsightsPage() {
       }
     }
     loadData();
-  }, []);
+  }, [supabase.auth]);
 
   return (
     <div className="p-4 space-y-6">
