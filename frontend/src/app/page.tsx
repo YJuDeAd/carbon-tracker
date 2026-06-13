@@ -143,12 +143,12 @@ export default function DashboardPage() {
           
           <Drawer>
             <DrawerTrigger asChild>
-              <button className="flex items-center space-x-2 bg-primary-foreground text-primary px-3 py-2 rounded-full text-sm font-bold shadow-sm active:scale-95 transition-transform">
+              <button aria-expanded={false} aria-controls="share-drawer" className="flex items-center space-x-2 bg-primary-foreground text-primary px-3 py-2 rounded-full text-sm font-bold shadow-sm active:scale-95 transition-transform">
                 <Share2 className="w-4 h-4" />
                 <span>Share</span>
               </button>
             </DrawerTrigger>
-            <DrawerContent>
+            <DrawerContent id="share-drawer">
               <DrawerHeader className="text-left">
                 <DrawerTitle>Share Your Progress</DrawerTitle>
                 <DrawerDescription>Inspire others by sharing your footprint.</DrawerDescription>
@@ -187,7 +187,7 @@ export default function DashboardPage() {
             { icon: Zap, label: "Energy", category: "energy", color: "bg-yellow-100 text-yellow-600" },
             { icon: ShoppingBag, label: "Shop", category: "shopping", color: "bg-purple-100 text-purple-600" },
           ].map((item, i) => (
-            <Link href={`/log?category=${item.category}`} key={i} className="flex flex-col items-center gap-2">
+            <Link href={`/log?category=${item.category}`} key={i} className="flex flex-col items-center gap-2" aria-label={`Log ${item.label} activity`}>
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${item.color}`}>
                 <item.icon className="w-6 h-6" />
               </div>

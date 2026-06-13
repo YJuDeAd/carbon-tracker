@@ -197,6 +197,7 @@ function LogActivityForm() {
           ) : (
             <div className="relative">
               <Input 
+                id="activity-amount"
                 type="text" 
                 inputMode="decimal" 
                 placeholder="0" 
@@ -204,8 +205,9 @@ function LogActivityForm() {
                 value={amount} 
                 onChange={(e) => setAmount(e.target.value)} 
                 required 
+                aria-describedby="amount-unit"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+              <span id="amount-unit" className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
                 {getUnit(selectedOpt.category, selectedOpt.type)}
               </span>
             </div>

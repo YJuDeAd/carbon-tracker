@@ -19,7 +19,7 @@ export function WeeklyTrendChart({ trendData }: { trendData?: { date: string; co
       ];
 
   return (
-    <div className="h-64 w-full mt-4">
+    <div className="h-64 w-full mt-4" role="img" aria-label="Weekly carbon trend chart">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
           <defs>
