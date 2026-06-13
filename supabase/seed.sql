@@ -32,4 +32,15 @@ INSERT INTO public.emission_factors (category, activity_type, co2e_per_unit, uni
 -- Travel
 ('Travel', 'Short-haul Flight', 0.15, 'km', 'EPA'),
 ('Travel', 'Long-haul Flight', 0.11, 'km', 'EPA'),
-('Travel', 'Hotel Stay', 12.0, 'night', 'EPA');
+('Travel', 'Hotel Stay', 12.0, 'night', 'EPA'),
+
+-- Baseline (For onboarding heuristics)
+('Baseline Diet', 'Meat Lover', 57.7, 'week', 'Heuristic'),
+('Baseline Diet', 'Average', 38.5, 'week', 'Heuristic'),
+('Baseline Diet', 'Vegetarian', 19.2, 'week', 'Heuristic'),
+('Baseline Diet', 'Vegan', 9.6, 'week', 'Heuristic'),
+('Baseline Energy', 'Grid Electricity', 80.0, 'week', 'Heuristic'),
+('Baseline Energy', 'Solar Panels', 10.0, 'week', 'Heuristic'),
+('Baseline Energy', 'Natural Gas', 60.0, 'week', 'Heuristic'),
+('Baseline Energy', 'Mixed', 70.0, 'week', 'Heuristic'),
+('Baseline Commute', 'Average Car', 0.4, 'mile', 'Heuristic');
