@@ -104,3 +104,21 @@ npx playwright test
 - **Aesthetic:** Clean, glassmorphic interfaces utilizing a custom Emerald Green palette.
 - **Framing:** Progress-focused, never guilt-based. We celebrate every small reduction!
 - **Simplicity:** All core logging flows are completable in under 3 interactions.
+
+---
+
+## 🚀 Production Deployment Checklist
+
+Before going live or sharing the application publicly, ensure you have reviewed the following DevOps checklist:
+
+### 1. Environment Variables & Secrets
+- **Vercel (Frontend)**: Only provide environment variables starting with `NEXT_PUBLIC_` (e.g., `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_API_URL`). Never place backend service role keys here!
+- **Render (Backend)**: Provide the secure variables directly in the Render dashboard's Environment section (e.g., `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`). Ensure your `FRONTEND_URL` is set to your Vercel domain to restrict CORS access.
+
+### 2. Security & HTTPS Enforcement
+- **HTTPS Termination**: Both Vercel and Render automatically provision SSL certificates and enforce HTTPS via redirect at the edge network.
+- **CORS Scope**: The FastAPI backend employs `CORSMiddleware` strictly scoping allowed requests to `localhost` and `*.vercel.app` production branches.
+
+### 3. Render Keep-Alive (Free Tier)
+- Render's free tier spins down idle instances after 15 minutes of inactivity. This will cause cold starts (~50 seconds) on the first API hit.
+- **Solution**: Set up a free [UptimeRobot](https://uptimerobot.com/) monitor to ping `https://your-render-url.onrender.com/health` every 5 minutes. This ensures the FastAPI backend stays awake to quickly serve users.
