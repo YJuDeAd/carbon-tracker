@@ -48,16 +48,19 @@ export default function GoalsPage() {
       const headers = { "Authorization": `Bearer ${userToken}` };
       
       const [resGoals, resLeaderboard] = await Promise.all([
-        fetch(`${API_URL}/goals`, { headers }),
-        fetch(`${API_URL}/users/leaderboard`, { headers })
+        fetch(`${API_URL}/goals`, { headers }).catch(e => null),
+        fetch(`${API_URL}/users/leaderboard`, { headers }).catch(e => null)
       ]);
       
-      if (resGoals.ok) {
+      if (resGoals && resGoals.ok) {
         setGoals(await resGoals.json());
       }
       
-      if (resLeaderboard.ok) {
+      if (resLeaderboard && resLeaderboard.ok) {
         setLeaderboard(await resLeaderboard.json());
+      } else {
+        // Set a sentinel value to indicate error state
+        setLeaderboard([{ name: "Error loading leaderboard", score: 0, rank: 0, is_current_user: false, color: "text-red-500" }]);
       }
     } catch (e) {
       console.error(e);
