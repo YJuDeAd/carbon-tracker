@@ -18,6 +18,7 @@ const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").rep
 export default function GoalsPage() {
   const supabase = createClient();
   const [goals, setGoals] = useState<{id: string, status: string, target_co2e: number, current_co2e?: number, category: string, deadline: string}[]>([]);
+  const [leaderboard, setLeaderboard] = useState<{name: string, score: number, rank: number, is_current_user: boolean, color: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
 
@@ -40,11 +41,18 @@ export default function GoalsPage() {
       setToken(userToken);
 
       const headers = { "Authorization": `Bearer ${userToken}` };
-      const res = await fetch(`${API_URL}/goals`, { headers });
-      if (res.ok) {
-        const data = await res.json();
-        
-        setGoals(data);
+      
+      const [resGoals, resLeaderboard] = await Promise.all([
+        fetch(`${API_URL}/goals`, { headers }),
+        fetch(`${API_URL}/users/leaderboard`, { headers })
+      ]);
+      
+      if (resGoals.ok) {
+        setGoals(await resGoals.json());
+      }
+      
+      if (resLeaderboard.ok) {
+        setLeaderboard(await resLeaderboard.json());
       }
     } catch (e) {
       console.error(e);
@@ -220,20 +228,19 @@ export default function GoalsPage() {
             <h2 className="text-lg font-bold mb-3">Community Leaderboard</h2>
             <Card className="border-none shadow-sm">
               <CardContent className="p-0 divide-y divide-border">
-                {[
-                  { name: "Sarah J.", score: 120, rank: 1, color: "text-yellow-500" },
-                  { name: "Eco Warrior (You)", score: 145, rank: 2, color: "text-blue-500" },
-                  { name: "Mike T.", score: 180, rank: 3, color: "text-muted-foreground" },
-                  { name: "Anna K.", score: 210, rank: 4, color: "text-muted-foreground" },
-                ].map((user, i) => (
-                  <div key={i} className="flex items-center justify-between p-4">
-                    <div className="flex items-center space-x-3">
-                      <div className={`font-black text-lg w-6 text-center ${user.color}`}>#{user.rank}</div>
-                      <span className="font-medium text-sm">{user.name}</span>
+                {leaderboard.length === 0 ? (
+                  <div className="p-4 text-center text-sm text-muted-foreground">Loading leaderboard...</div>
+                ) : (
+                  leaderboard.map((user, i) => (
+                    <div key={i} className="flex items-center justify-between p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className={`font-black text-lg w-6 text-center ${user.color}`}>#{user.rank}</div>
+                        <span className={cn("font-medium text-sm", user.is_current_user && "font-bold text-blue-600")}>{user.name}</span>
+                      </div>
+                      <div className="font-bold text-sm">{user.score} kg CO₂e</div>
                     </div>
-                    <div className="font-bold text-sm">{user.score} kg CO₂e</div>
-                  </div>
-                ))}
+                  ))
+                )}
               </CardContent>
             </Card>
           </section>

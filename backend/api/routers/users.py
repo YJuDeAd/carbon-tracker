@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from core.database import supabase
 from core.security import get_current_user_id
-from models.user import UserResponse, GamificationResponse, BaselineRequest, DashboardResponse, DailyTrend
+from models.user import UserResponse, GamificationResponse, BaselineRequest, DashboardResponse, DailyTrend, LeaderboardEntry
 from datetime import datetime, timedelta
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -104,4 +104,42 @@ def get_dashboard_stats(user_id: str = Depends(get_current_user_id)):
         percent_diff=percent_diff,
         weekly_trend=weekly_trend
     )
+
+@router.get("/leaderboard", response_model=list[LeaderboardEntry])
+def get_community_leaderboard(user_id: str = Depends(get_current_user_id)):
+    """
+    Fetch the top 10 users ranked by lowest baseline score.
+    """
+    resp = supabase.table("users").select("id, email, baseline_score").not_.is_("baseline_score", "null").order("baseline_score").limit(10).execute()
+    users = resp.data or []
+    
+    leaderboard = []
+    for i, u in enumerate(users):
+        rank = i + 1
+        is_current = u["id"] == user_id
+        
+        if rank == 1:
+            color = "text-yellow-500"
+        elif is_current:
+            color = "text-blue-500"
+        else:
+            color = "text-muted-foreground"
+            
+        if is_current:
+            name = "Eco Warrior (You)"
+        else:
+            email = u.get("email", "")
+            name = email.split("@")[0] if "@" in email else "Eco User"
+            
+        score = float(u["baseline_score"])
+        
+        leaderboard.append(LeaderboardEntry(
+            name=name,
+            score=round(score, 1),
+            rank=rank,
+            is_current_user=is_current,
+            color=color
+        ))
+        
+    return leaderboard
 

@@ -31,3 +31,10 @@ class DashboardResponse(BaseModel):
     baseline_score: float | None
     percent_diff: float | None
     weekly_trend: list[DailyTrend]
+
+class LeaderboardEntry(BaseModel):
+    name: str
+    score: float
+    rank: int
+    is_current_user: bool
+    color: str

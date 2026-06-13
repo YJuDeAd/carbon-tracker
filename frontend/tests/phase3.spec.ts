@@ -19,6 +19,11 @@ test.describe('Phase 3 Features', () => {
     await page.route('http://127.0.0.1:8000/goals/*', async route => {
       await route.fulfill({ status: 200, body: JSON.stringify([]) });
     });
+    await page.route('http://127.0.0.1:8000/users/leaderboard', async route => {
+      await route.fulfill({ status: 200, body: JSON.stringify([
+        { name: "Test User", score: 100, rank: 1, is_current_user: false, color: "text-yellow-500" }
+      ]) });
+    });
 
     await page.goto('/goals', { waitUntil: 'networkidle' });
     
