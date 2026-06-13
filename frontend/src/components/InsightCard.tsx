@@ -25,12 +25,6 @@ export function InsightCard({ tips }: { tips: string[] }) {
             </li>
           ))}
         </ul>
-        <button 
-          onClick={() => router.push("/goals")}
-          className="text-xs font-bold text-green-700 dark:text-green-400 bg-background/60 hover:bg-background border border-green-300 dark:border-green-800 py-1.5 px-3 rounded-full transition-colors"
-        >
-          Try this
-        </button>
       </CardContent>
     </Card>
   );
