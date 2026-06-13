@@ -26,13 +26,16 @@ def get_weekly_insights(user_id: str, supabase: Client) -> InsightResponse:
             
     # 2. Summarize activity
     seven_days_ago_date = date.today() - timedelta(days=7)
-    activities_resp = supabase.table("activities").select("*").eq("user_id", user_id).gte("date", seven_days_ago_date.isoformat()).execute()
+    
+    summary_resp = supabase.rpc("get_user_category_summary", {
+        "p_user_id": user_id, 
+        "p_start_date": seven_days_ago_date.isoformat()
+    }).execute()
     
     summary = {}
-    if activities_resp.data:
-        for act in activities_resp.data:
-            cat = act["category"]
-            summary[cat] = summary.get(cat, 0) + act["co2e_kg"]
+    if summary_resp.data:
+        for row in summary_resp.data:
+            summary[row["category"]] = float(row["total_co2e"])
         
     if summary:
         summary_text = ", ".join([f"{cat}: {co2e:.2f} kg CO2e" for cat, co2e in summary.items()])

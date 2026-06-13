@@ -34,8 +34,8 @@ def get_user_gamification(
     """
     
     # Total logs
-    resp = supabase.table("activities").select("id").eq("user_id", user_id).execute()
-    total_logs = len(resp.data or [])
+    resp = supabase.table("activities").select("id", count="exact").eq("user_id", user_id).limit(1).execute()
+    total_logs = resp.count or 0
     
     # Streak
     streak = calculate_streak(user_id, supabase)
@@ -104,10 +104,15 @@ def get_dashboard_stats(
     now = datetime.utcnow()
     seven_days_ago = now - timedelta(days=7)
     
-    act_resp = supabase.table("activities").select("date, co2e_kg").eq("user_id", user_id).gte("date", seven_days_ago.isoformat()).execute()
-    activities = act_resp.data or []
+    # Use RPC to get aggregated daily trends
+    trend_resp = supabase.rpc("get_user_daily_trends", {
+        "p_user_id": user_id, 
+        "p_start_date": seven_days_ago.isoformat()[:10]
+    }).execute()
     
-    this_week_co2e = sum(float(a["co2e_kg"]) for a in activities)
+    trend_data = trend_resp.data or []
+    
+    this_week_co2e = sum(float(t["daily_total"]) for t in trend_data)
     
     percent_diff = None
     if baseline_score and baseline_score > 0:
@@ -120,10 +125,10 @@ def get_dashboard_stats(
         d = (now - timedelta(days=6-i)).strftime("%Y-%m-%d")
         trend_dict[d] = 0.0
         
-    for a in activities:
-        date_str = a["date"][:10]
+    for t in trend_data:
+        date_str = t["activity_date"]
         if date_str in trend_dict:
-            trend_dict[date_str] += float(a["co2e_kg"])
+            trend_dict[date_str] = float(t["daily_total"])
             
     weekly_trend = [DailyTrend(date=k, co2e_kg=v) for k, v in trend_dict.items()]
     
