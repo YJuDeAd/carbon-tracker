@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Dashboard Rendering', () => {
   test('renders Hero Metric, Quick Log Grid, and Chart', async ({ page }) => {
     // Navigate directly to dashboard
-    await page.goto('/');
+    await page.goto('/dashboard');
 
     // Validate Hero Metric
     await expect(page.getByText('Overview')).toBeVisible();

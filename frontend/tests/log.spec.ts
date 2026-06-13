@@ -21,7 +21,7 @@ test.describe('Log Activity Flow', () => {
     // Submit form
     await page.getByRole('button', { name: 'Log Activity' }).click();
 
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/dashboard');
     await expect(page.getByText('Overview')).toBeVisible();
   });
 });

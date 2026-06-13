@@ -35,7 +35,7 @@ test.describe('Onboarding Flow', () => {
     await page.getByRole('button', { name: 'Complete Profile' }).click();
 
     // Validate redirect to dashboard
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/dashboard');
     await expect(page.getByText('Overview')).toBeVisible();
   });
 });

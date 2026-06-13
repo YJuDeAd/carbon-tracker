@@ -45,7 +45,7 @@ test.describe('Phase 3 Features', () => {
       await route.fulfill({ status: 200, body: JSON.stringify([]) });
     });
     
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/dashboard', { waitUntil: 'networkidle' });
     
     // Click Share button
     await page.getByRole('button', { name: 'Share' }).click();
