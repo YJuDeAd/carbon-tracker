@@ -105,8 +105,6 @@ function LogActivityForm() {
         const errorText = await response.text();
         throw new Error(`Failed to log activity: ${errorText}`);
       }
-
-      router.refresh();
       router.push("/");
     } catch (error) {
       console.error(error);
