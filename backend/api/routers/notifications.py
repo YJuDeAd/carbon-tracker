@@ -3,7 +3,7 @@ from core.database import supabase
 from core.security import get_current_user_id
 from models.notification import NotificationReminder
 from datetime import date
-from services.gamification_service import get_user_stats
+from services.gamification_service import calculate_streak
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
@@ -19,9 +19,8 @@ def get_daily_reminder(user_id: str = Depends(get_current_user_id)):
         resp = supabase.table("activities").select("id").eq("user_id", user_id).eq("date", today_str).execute()
         has_logged_today = len(resp.data) > 0
 
-        # Get user streak stats
-        stats = get_user_stats(user_id)
-        current_streak = stats.get("current_streak", 0)
+        # Get user streak
+        current_streak = calculate_streak(user_id)
 
         if has_logged_today:
             return NotificationReminder(
