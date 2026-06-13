@@ -11,7 +11,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+import { API_URL } from "@/lib/config";
 
 export default function ProfilePage() {
   const router = useRouter();

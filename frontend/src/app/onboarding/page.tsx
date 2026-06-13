@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { API_URL } from "@/lib/config";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -21,7 +22,6 @@ export default function OnboardingPage() {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.access_token) {
-          const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
           await fetch(`${API_URL}/users/me/baseline`, {
             method: "PUT",
             headers: {

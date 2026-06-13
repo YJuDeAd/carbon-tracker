@@ -50,37 +50,15 @@ def get_user_gamification(
         unlocked_badges=unlocked_badges
     )
 
+from services.carbon_calc import calculate_weekly_baseline
+
 @router.put("/me/baseline", response_model=UserResponse)
 def calculate_and_save_baseline(
     req: BaselineRequest, 
     user_id: str = Depends(get_current_user_id),
     supabase: Client = Depends(get_supabase_client)
 ):
-    # Fetch heuristic baseline factors from DB
-    factors_resp = supabase.table("emission_factors").select("category, activity_type, co2e_per_unit").in_(
-        "category", ["Baseline Diet", "Baseline Energy", "Baseline Commute"]
-    ).execute()
-    
-    factors = factors_resp.data or []
-    
-    diet_co2 = 38.5  # fallback
-    energy_co2 = 70.0  # fallback
-    commute_multiplier = 0.4  # fallback
-    
-    for f in factors:
-        cat = f["category"]
-        act = f["activity_type"]
-        val = float(f["co2e_per_unit"])
-        
-        if cat == "Baseline Diet" and act == req.diet:
-            diet_co2 = val
-        elif cat == "Baseline Energy" and act == req.energy_source:
-            energy_co2 = val
-        elif cat == "Baseline Commute" and act == "Average Car":
-            commute_multiplier = val
-            
-    commute_co2 = req.commute_miles * commute_multiplier
-    weekly_baseline = diet_co2 + commute_co2 + energy_co2
+    weekly_baseline = calculate_weekly_baseline(req, supabase)
     
     resp = supabase.table("users").update({"baseline_score": weekly_baseline}).eq("id", user_id).execute()
     if not resp.data:

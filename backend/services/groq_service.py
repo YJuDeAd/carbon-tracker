@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime, timedelta, date, timezone
 from groq import Groq
 from core.config import settings
@@ -15,10 +16,8 @@ def get_weekly_insights(user_id: str, supabase: Client) -> InsightResponse:
     now_utc = datetime.now(timezone.utc)
     
     if latest_insight:
-        # Handle Supabase timestamp string with 'Z' or '+00:00'
-        ts_str = latest_insight["generated_at"].replace("Z", "+00:00")
         try:
-            generated_at = datetime.fromisoformat(ts_str)
+            generated_at = datetime.fromisoformat(latest_insight["generated_at"])
             if (now_utc - generated_at).days < 7:
                 return InsightResponse(**latest_insight)
         except ValueError:
@@ -58,12 +57,8 @@ Summary: {summary_text}
         )
         content = chat_completion.choices[0].message.content.strip()
         # Clean up in case the model returned code blocks anyway
-        if content.startswith("```json"):
-            content = content[7:]
-        if content.startswith("```"):
-            content = content[3:]
-        if content.endswith("```"):
-            content = content[:-3]
+        content = re.sub(r"^```(?:json)?\s*", "", content)
+        content = re.sub(r"\s*```$", "", content)
         content = content.strip()
         tips = json.loads(content)
         if not isinstance(tips, list) or len(tips) != 3:

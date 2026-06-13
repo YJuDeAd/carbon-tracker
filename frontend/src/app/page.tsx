@@ -14,7 +14,7 @@ import { Drawer, DrawerContent, DrawerTrigger, DrawerTitle, DrawerDescription, D
 import * as htmlToImage from "html-to-image";
 import { useRef } from "react";
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+import { API_URL } from "@/lib/config";
 
 export default function DashboardPage() {
   const router = useRouter();

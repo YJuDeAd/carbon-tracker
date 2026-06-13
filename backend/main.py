@@ -8,16 +8,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
-import os
+from core.config import settings
 
-origins = [
-    "http://localhost:3000", 
-    "http://127.0.0.1:3000",
-    "https://carbon-tracker-hazel.vercel.app"
-]
-frontend_url = os.environ.get("FRONTEND_URL")
-if frontend_url and frontend_url not in origins:
-    origins.append(frontend_url)
+origins = [origin.strip() for origin in settings.ALLOWED_ORIGINS.split(",") if origin.strip()]
 
 # Configure CORS (allow frontend)
 app.add_middleware(
