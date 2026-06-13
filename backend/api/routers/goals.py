@@ -1,12 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from core.database import supabase
+from core.database import get_supabase_client
+from supabase import Client
 from core.security import get_current_user_id
 from models.goal import GoalCreate, GoalResponse, GoalUpdate
 
 router = APIRouter(prefix="/goals", tags=["goals"])
 
 @router.post("", response_model=GoalResponse)
-def create_goal(goal: GoalCreate, user_id: str = Depends(get_current_user_id)):
+def create_goal(
+    goal: GoalCreate, 
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     insert_data = goal.model_dump()
     insert_data["user_id"] = user_id
     insert_data["deadline"] = insert_data["deadline"].isoformat()
@@ -17,7 +22,10 @@ def create_goal(goal: GoalCreate, user_id: str = Depends(get_current_user_id)):
     return resp.data[0]
 
 @router.get("", response_model=list[GoalResponse])
-def get_goals(user_id: str = Depends(get_current_user_id)):
+def get_goals(
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     goals_resp = supabase.table("goals").select("*").eq("user_id", user_id).order("deadline", desc=False).execute()
     goals = goals_resp.data
 
@@ -40,14 +48,23 @@ def get_goals(user_id: str = Depends(get_current_user_id)):
     return goals
 
 @router.get("/{goal_id}", response_model=GoalResponse)
-def get_goal(goal_id: str, user_id: str = Depends(get_current_user_id)):
+def get_goal(
+    goal_id: str, 
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     resp = supabase.table("goals").select("*").eq("id", goal_id).eq("user_id", user_id).execute()
     if not resp.data:
         raise HTTPException(status_code=404, detail="Goal not found")
     return resp.data[0]
 
 @router.patch("/{goal_id}", response_model=GoalResponse)
-def update_goal(goal_id: str, updates: GoalUpdate, user_id: str = Depends(get_current_user_id)):
+def update_goal(
+    goal_id: str, 
+    updates: GoalUpdate, 
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     resp = supabase.table("goals").select("*").eq("id", goal_id).eq("user_id", user_id).execute()
     if not resp.data:
         raise HTTPException(status_code=404, detail="Goal not found")
@@ -65,7 +82,11 @@ def update_goal(goal_id: str, updates: GoalUpdate, user_id: str = Depends(get_cu
     return upd_resp.data[0]
 
 @router.delete("/{goal_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_goal(goal_id: str, user_id: str = Depends(get_current_user_id)):
+def delete_goal(
+    goal_id: str, 
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     resp = supabase.table("goals").select("id").eq("id", goal_id).eq("user_id", user_id).execute()
     if not resp.data:
         raise HTTPException(status_code=404, detail="Goal not found")

@@ -1,7 +1,7 @@
 from datetime import date, timedelta
-from core.database import supabase
+from supabase import Client
 
-def calculate_streak(user_id: str) -> int:
+def calculate_streak(user_id: str, supabase: Client) -> int:
     # Fetch unique dates of activities
     resp = supabase.table("activities").select("date").eq("user_id", user_id).order("date", desc=True).execute()
     if not resp.data:
@@ -29,14 +29,14 @@ def calculate_streak(user_id: str) -> int:
             
     return streak
 
-def check_and_award_badges(user_id: str):
+def check_and_award_badges(user_id: str, supabase: Client):
     # Fetch all activities
     resp = supabase.table("activities").select("category").eq("user_id", user_id).execute()
     activities = resp.data or []
     total_logs = len(activities)
     
     # Calculate streak
-    streak = calculate_streak(user_id)
+    streak = calculate_streak(user_id, supabase)
     
     # Determine which badges should be unlocked
     unlocked = set()

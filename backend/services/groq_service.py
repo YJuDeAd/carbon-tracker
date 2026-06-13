@@ -2,12 +2,12 @@ import json
 from datetime import datetime, timedelta, date, timezone
 from groq import Groq
 from core.config import settings
-from core.database import supabase
+from supabase import Client
 from models.insight import InsightResponse
 
 groq_client = Groq(api_key=settings.GROQ_API_KEY)
 
-def get_weekly_insights(user_id: str) -> InsightResponse:
+def get_weekly_insights(user_id: str, supabase: Client) -> InsightResponse:
     # 1. Check cache
     insights_resp = supabase.table("insights").select("*").eq("user_id", user_id).order("generated_at", desc=True).limit(1).execute()
     latest_insight = insights_resp.data[0] if insights_resp.data else None

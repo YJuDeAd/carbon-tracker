@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from core.database import supabase
+from core.database import get_supabase_client
+from supabase import Client
 from core.security import get_current_user_id
 from models.activity import ActivityCreate, ActivityResponse, SuggestTransportResponse
 from services.gamification_service import check_and_award_badges
@@ -7,7 +8,11 @@ from services.gamification_service import check_and_award_badges
 router = APIRouter(prefix="/activities", tags=["activities"])
 
 @router.post("", response_model=ActivityResponse)
-def log_activity(activity: ActivityCreate, user_id: str = Depends(get_current_user_id)):
+def log_activity(
+    activity: ActivityCreate, 
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     """
     Log a new activity. The CO2e footprint is calculated on the backend
     by looking up the emission factor for the given category/activity_type.
@@ -46,14 +51,17 @@ def log_activity(activity: ActivityCreate, user_id: str = Depends(get_current_us
         if not insert_resp.data:
             raise HTTPException(status_code=500, detail="Failed to insert activity")
             
-        check_and_award_badges(user_id)
+        check_and_award_badges(user_id, supabase)
         
         return insert_resp.data[0]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 @router.get("", response_model=list[ActivityResponse])
-def get_activities(user_id: str = Depends(get_current_user_id)):
+def get_activities(
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     """
     Fetch all logged activities for the current user.
     """
@@ -65,7 +73,8 @@ async def suggest_transport(
     origin: str, 
     destination: str, 
     vehicle_type: str, 
-    user_id: str = Depends(get_current_user_id)
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
 ):
     """
     Given an origin, destination, and vehicle type, calculates the driving distance in km

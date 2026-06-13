@@ -206,7 +206,7 @@ npx playwright test
 1. Go to render.com -> New Web Service -> Connect repo
 2. Set **Root Directory** to `backend`
 3. Set **Start Command** to `uvicorn main:app --host 0.0.0.0 --port 8000`
-4. Add environment variables (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, `FRONTEND_URL`)
+4. Add environment variables (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, `FRONTEND_URL`)
 5. Deploy
 
 > Note: Render free tier spins down after 15 minutes of inactivity. Set up a free UptimeRobot monitor pinging `/health` every 5 minutes to keep the backend awake.
@@ -218,6 +218,7 @@ npx playwright test
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Vercel | Supabase anon key (safe for frontend) |
 | `NEXT_PUBLIC_API_URL` | Vercel | Your Render backend URL |
 | `SUPABASE_URL` | Render | Supabase project URL |
+| `SUPABASE_ANON_KEY` | Render | Supabase anon key (for per-request JWT RLS enforcement) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Render | Supabase service role key -- never expose on frontend |
 | `GROQ_API_KEY` | Render | Groq API key -- never expose on frontend |
 | `FRONTEND_URL` | Render | Your Vercel domain (for CORS) |

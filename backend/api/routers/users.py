@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from core.database import supabase
+from core.database import get_supabase_client
+from supabase import Client
 from core.security import get_current_user_id
 from models.user import UserResponse, GamificationResponse, BaselineRequest, DashboardResponse, DailyTrend, LeaderboardEntry
 from datetime import datetime, timedelta
@@ -7,7 +8,10 @@ from datetime import datetime, timedelta
 router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("/me", response_model=UserResponse)
-def get_current_user_profile(user_id: str = Depends(get_current_user_id)):
+def get_current_user_profile(
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     """
     Fetch the current authenticated user's profile from the Supabase public.users table.
     """
@@ -21,7 +25,10 @@ def get_current_user_profile(user_id: str = Depends(get_current_user_id)):
 
 from services.gamification_service import calculate_streak
 @router.get("/me/gamification", response_model=GamificationResponse)
-def get_user_gamification(user_id: str = Depends(get_current_user_id)):
+def get_user_gamification(
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     """
     Fetch the user's gamification stats (streak, total logs, unlocked badges).
     """
@@ -31,7 +38,7 @@ def get_user_gamification(user_id: str = Depends(get_current_user_id)):
     total_logs = len(resp.data or [])
     
     # Streak
-    streak = calculate_streak(user_id)
+    streak = calculate_streak(user_id, supabase)
     
     # Badges
     ach_resp = supabase.table("achievements").select("badge_type").eq("user_id", user_id).execute()
@@ -44,7 +51,11 @@ def get_user_gamification(user_id: str = Depends(get_current_user_id)):
     )
 
 @router.put("/me/baseline", response_model=UserResponse)
-def calculate_and_save_baseline(req: BaselineRequest, user_id: str = Depends(get_current_user_id)):
+def calculate_and_save_baseline(
+    req: BaselineRequest, 
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     # Simple heuristic baseline calculator (kg CO2e per week)
     diet_map = {"Meat Lover": 57.7, "Average": 38.5, "Vegetarian": 19.2, "Vegan": 9.6}
     diet_co2 = diet_map.get(req.diet, 38.5)
@@ -62,7 +73,10 @@ def calculate_and_save_baseline(req: BaselineRequest, user_id: str = Depends(get
     return resp.data[0]
 
 @router.get("/me/dashboard", response_model=DashboardResponse)
-def get_dashboard_stats(user_id: str = Depends(get_current_user_id)):
+def get_dashboard_stats(
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     # Get user baseline
     user_resp = supabase.table("users").select("baseline_score").eq("id", user_id).execute()
     if not user_resp.data:
@@ -106,7 +120,10 @@ def get_dashboard_stats(user_id: str = Depends(get_current_user_id)):
     )
 
 @router.get("/leaderboard", response_model=list[LeaderboardEntry])
-def get_community_leaderboard(user_id: str = Depends(get_current_user_id)):
+def get_community_leaderboard(
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     """
     Fetch the top 10 users ranked by lowest baseline score.
     """

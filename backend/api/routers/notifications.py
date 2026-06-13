@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from core.database import supabase
+from core.database import get_supabase_client
+from supabase import Client
 from core.security import get_current_user_id
 from models.notification import NotificationReminder
 from datetime import date
@@ -8,7 +9,10 @@ from services.gamification_service import calculate_streak
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
 @router.get("/reminders", response_model=NotificationReminder)
-def get_daily_reminder(user_id: str = Depends(get_current_user_id)):
+def get_daily_reminder(
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase_client)
+):
     """
     Returns data for a daily reminder push notification.
     Personalizes the message based on current streak and if an activity was already logged today.
@@ -20,7 +24,7 @@ def get_daily_reminder(user_id: str = Depends(get_current_user_id)):
         has_logged_today = len(resp.data) > 0
 
         # Get user streak
-        current_streak = calculate_streak(user_id)
+        current_streak = calculate_streak(user_id, supabase)
 
         if has_logged_today:
             return NotificationReminder(
