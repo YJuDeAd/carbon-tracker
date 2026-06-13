@@ -1,22 +1,43 @@
-self.addEventListener("install", (event) => {
-  console.log("Service Worker installed.");
-});
+const CACHE_NAME = 'carbon-tracker-v1';
+const OFFLINE_URL = '/offline';
 
-self.addEventListener("activate", (event) => {
-  console.log("Service Worker activated.");
-});
-
-self.addEventListener("fetch", (event) => {
-  // Basic network-first strategy, fallback to a simple offline message
-  event.respondWith(
-    fetch(event.request).catch(() => {
-      return new Response("Offline content not available.", {
-        status: 503,
-        statusText: "Service Unavailable",
-        headers: new Headers({
-          "Content-Type": "text/plain"
-        })
-      });
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      // Pre-cache the offline page
+      return cache.addAll([OFFLINE_URL]);
     })
   );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(OFFLINE_URL);
+      })
+    );
+  } else {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(event.request);
+      })
+    );
+  }
 });

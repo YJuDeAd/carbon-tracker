@@ -8,9 +8,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { buttonVariants } from "@/components/ui/button";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Users, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 
@@ -129,78 +130,129 @@ export default function GoalsPage() {
         <p className="text-muted-foreground mt-1">Set targets and challenge yourself</p>
       </header>
 
-      {/* Create Goal Form */}
-      <Card className="bg-primary/5 border-primary/10 mb-6 overflow-visible">
-        <CardContent className="p-4">
-            <h3 className="font-bold mb-3 text-primary">New Goal</h3>
-            <form onSubmit={handleCreate} className="flex flex-col gap-3">
-                <div className="flex gap-2">
-                    <Select value={category} onValueChange={(v) => { if (v) setCategory(v); }}>
-                      <SelectTrigger className="flex-1 bg-background">
-                        <SelectValue placeholder="Category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="food">Food</SelectItem>
-                        <SelectItem value="transport">Transport</SelectItem>
-                        <SelectItem value="energy">Energy</SelectItem>
-                        <SelectItem value="shopping">Shopping</SelectItem>
-                        <SelectItem value="travel">Travel</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <input 
-                        type="number" 
-                        placeholder="Target (kg CO₂e)" 
-                        value={target}
-                        onChange={e => setTarget(e.target.value)}
-                        className="flex-1 bg-background border border-border rounded-md px-3 py-2 text-sm"
-                        required
-                    />
-                </div>
-                <div className="flex gap-2">
-                    <Popover>
-                      <PopoverTrigger 
-                        className={cn(
-                          buttonVariants({ variant: "outline" }),
-                          "flex-1 justify-start text-left font-normal bg-background text-sm px-3 py-2 h-auto",
-                          !deadlineDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {deadlineDate ? format(deadlineDate, "PPP") : <span>Pick deadline</span>}
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={deadlineDate}
-                          onSelect={setDeadlineDate}
-                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+      <Tabs defaultValue="my-goals" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="my-goals" className="font-bold flex items-center gap-2">
+            <Target className="w-4 h-4" /> My Goals
+          </TabsTrigger>
+          <TabsTrigger value="community" className="font-bold flex items-center gap-2">
+            <Users className="w-4 h-4" /> Community
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="my-goals" className="space-y-6">
+          {/* Create Goal Form */}
+          <Card className="bg-primary/5 border-primary/10 overflow-visible">
+            <CardContent className="p-4">
+                <h3 className="font-bold mb-3 text-primary">New Goal</h3>
+                <form onSubmit={handleCreate} className="flex flex-col gap-3">
+                    <div className="flex gap-2">
+                        <Select value={category} onValueChange={(v) => { if (v) setCategory(v); }}>
+                          <SelectTrigger className="flex-1 bg-background">
+                            <SelectValue placeholder="Category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="food">Food</SelectItem>
+                            <SelectItem value="transport">Transport</SelectItem>
+                            <SelectItem value="energy">Energy</SelectItem>
+                            <SelectItem value="shopping">Shopping</SelectItem>
+                            <SelectItem value="travel">Travel</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <input 
+                            type="number" 
+                            placeholder="Target (kg CO₂e)" 
+                            value={target}
+                            onChange={e => setTarget(e.target.value)}
+                            className="flex-1 bg-background border border-border rounded-md px-3 py-2 text-sm"
+                            required
                         />
-                      </PopoverContent>
-                    </Popover>
+                    </div>
+                    <div className="flex gap-2">
+                        <Popover>
+                          <PopoverTrigger 
+                            className={cn(
+                              buttonVariants({ variant: "outline" }),
+                              "flex-1 justify-start text-left font-normal bg-background text-sm px-3 py-2 h-auto",
+                              !deadlineDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {deadlineDate ? format(deadlineDate, "PPP") : <span>Pick deadline</span>}
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={deadlineDate}
+                              onSelect={setDeadlineDate}
+                              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                            />
+                          </PopoverContent>
+                        </Popover>
 
-                    <button type="submit" className="bg-primary text-primary-foreground font-bold rounded-md px-4 py-2 text-sm">
-                        Add Goal
-                    </button>
+                        <button type="submit" className="bg-primary text-primary-foreground font-bold rounded-md px-4 py-2 text-sm">
+                            Add Goal
+                        </button>
+                    </div>
+                </form>
+            </CardContent>
+          </Card>
+
+          <section>
+            <h2 className="text-lg font-bold mb-3">Your Challenges</h2>
+            {loading ? (
+                <div className="animate-pulse space-y-3">
+                    <div className="h-24 bg-muted rounded-xl w-full"></div>
+                    <div className="h-24 bg-muted rounded-xl w-full"></div>
                 </div>
-            </form>
-        </CardContent>
-      </Card>
+            ) : goals.length === 0 ? (
+                <p className="text-muted-foreground text-sm">No goals active. Create one above!</p>
+            ) : (
+                goals.map((goal: {id: string, status: string, target_co2e: number, current_co2e?: number, category: string, deadline: string}) => (
+                    <GoalCard key={goal.id} goal={goal} onToggle={handleToggle} />
+                ))
+            )}
+          </section>
+        </TabsContent>
 
-      <section>
-        <h2 className="text-lg font-bold mb-3">Your Challenges</h2>
-        {loading ? (
-            <div className="animate-pulse space-y-3">
-                <div className="h-24 bg-muted rounded-xl w-full"></div>
-                <div className="h-24 bg-muted rounded-xl w-full"></div>
-            </div>
-        ) : goals.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No goals active. Create one above!</p>
-        ) : (
-            goals.map((goal: {id: string, status: string, target_co2e: number, current_co2e?: number, category: string, deadline: string}) => (
-                <GoalCard key={goal.id} goal={goal} onToggle={handleToggle} />
-            ))
-        )}
-      </section>
+        <TabsContent value="community" className="space-y-6">
+          <section>
+            <h2 className="text-lg font-bold mb-3">Community Leaderboard</h2>
+            <Card className="border-none shadow-sm">
+              <CardContent className="p-0 divide-y divide-border">
+                {[
+                  { name: "Sarah J.", score: 120, rank: 1, color: "text-yellow-500" },
+                  { name: "Eco Warrior (You)", score: 145, rank: 2, color: "text-blue-500" },
+                  { name: "Mike T.", score: 180, rank: 3, color: "text-muted-foreground" },
+                  { name: "Anna K.", score: 210, rank: 4, color: "text-muted-foreground" },
+                ].map((user, i) => (
+                  <div key={i} className="flex items-center justify-between p-4">
+                    <div className="flex items-center space-x-3">
+                      <div className={`font-black text-lg w-6 text-center ${user.color}`}>#{user.rank}</div>
+                      <span className="font-medium text-sm">{user.name}</span>
+                    </div>
+                    <div className="font-bold text-sm">{user.score} kg CO₂e</div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-bold mb-3">Active Challenges</h2>
+            <Card className="border-none shadow-sm bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30">
+              <CardContent className="p-4 flex flex-col items-start space-y-2">
+                <div className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-bold px-2 py-1 rounded-full">Ends in 3 days</div>
+                <h3 className="font-bold text-lg">Meatless Monday Marathon</h3>
+                <p className="text-sm text-muted-foreground">Join 1,204 others in skipping meat for the entire week.</p>
+                <button className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition-colors">
+                  Join Challenge
+                </button>
+              </CardContent>
+            </Card>
+          </section>
+        </TabsContent>
+      </Tabs>
 
       <div className="h-4"></div>
     </div>

@@ -3,12 +3,16 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { WeeklyTrendChart } from "@/components/WeeklyTrendChart";
-import { Car, Zap, Utensils, ShoppingBag, Plus, Loader2 } from "lucide-react";
+import { Car, Zap, Utensils, ShoppingBag, Plus, Loader2, Share2, Download } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StreakWidget } from "@/components/StreakWidget";
 import { BadgeGrid } from "@/components/BadgeGrid";
 import { createClient } from "@/utils/supabase/client";
+import { ShareSummaryCard } from "@/components/ShareSummaryCard";
+import { Drawer, DrawerContent, DrawerTrigger, DrawerTitle, DrawerDescription, DrawerHeader } from "@/components/ui/drawer";
+import * as htmlToImage from "html-to-image";
+import { useRef } from "react";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 
@@ -18,6 +22,8 @@ export default function DashboardPage() {
   const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
   const [dashboardData, setDashboardData] = useState<{this_week_co2e: number, percent_diff: number, weekly_trend: {date: string, co2e_kg: number}[]} | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("Eco Warrior");
+  const shareCardRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -31,6 +37,10 @@ export default function DashboardPage() {
 
       let shouldRedirect = false;
       try {
+        if (session.user.user_metadata?.name) {
+          setUserName(session.user.user_metadata.name);
+        }
+        
         const [gamRes, dashRes] = await Promise.all([
           fetch(`${API_URL}/users/me/gamification`, { headers: { "Authorization": `Bearer ${token}` } }),
           fetch(`${API_URL}/users/me/dashboard`, { headers: { "Authorization": `Bearer ${token}` } })
@@ -83,6 +93,36 @@ export default function DashboardPage() {
     headerMessage = "You're exactly on track with your baseline. 📊";
   }
 
+  const handleShare = async () => {
+    if (!shareCardRef.current) return;
+    try {
+      const dataUrl = await htmlToImage.toPng(shareCardRef.current, { cacheBust: true, pixelRatio: 2 });
+      
+      try {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const file = new File([blob], "carbon-score.png", { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'My Carbon Footprint',
+            text: 'Check out my progress on Carbon Footprint Tracker!',
+            files: [file],
+          });
+          return;
+        }
+      } catch(e) {
+        // Fallback to download
+      }
+
+      const link = document.createElement("a");
+      link.download = "carbon-score.png";
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Failed to generate image", err);
+    }
+  };
+
   return (
     <div className="p-4 space-y-6">
       <header className="pt-8 pb-4">
@@ -92,12 +132,41 @@ export default function DashboardPage() {
 
       {/* Hero Metric */}
       <Card className="bg-primary text-primary-foreground border-none shadow-md">
-        <CardContent className="p-6">
-          <div className="text-sm font-medium opacity-90 mb-2">This Week&apos;s Footprint</div>
-          <div className="flex items-end gap-2">
-            <span className="text-5xl font-bold">{footprint}</span>
-            <span className="text-lg opacity-90 pb-1">kg CO₂e</span>
+        <CardContent className="p-6 flex justify-between items-end">
+          <div>
+            <div className="text-sm font-medium opacity-90 mb-2">This Week&apos;s Footprint</div>
+            <div className="flex items-end gap-2">
+              <span className="text-5xl font-bold">{footprint}</span>
+              <span className="text-lg opacity-90 pb-1">kg CO₂e</span>
+            </div>
           </div>
+          
+          <Drawer>
+            <DrawerTrigger asChild>
+              <button className="flex items-center space-x-2 bg-primary-foreground text-primary px-3 py-2 rounded-full text-sm font-bold shadow-sm active:scale-95 transition-transform">
+                <Share2 className="w-4 h-4" />
+                <span>Share</span>
+              </button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader className="text-left">
+                <DrawerTitle>Share Your Progress</DrawerTitle>
+                <DrawerDescription>Inspire others by sharing your footprint.</DrawerDescription>
+              </DrawerHeader>
+              <div className="flex flex-col items-center justify-center p-4 space-y-6">
+                <div className="flex justify-center w-full overflow-hidden rounded-3xl">
+                  <ShareSummaryCard ref={shareCardRef} footprint={footprint} streak={streak} userName={userName} />
+                </div>
+                <button 
+                  onClick={handleShare}
+                  className="w-full max-w-[350px] bg-primary text-primary-foreground font-bold py-3 rounded-xl flex items-center justify-center space-x-2"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Save or Share Image</span>
+                </button>
+              </div>
+            </DrawerContent>
+          </Drawer>
         </CardContent>
       </Card>
 

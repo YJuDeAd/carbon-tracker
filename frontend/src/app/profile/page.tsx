@@ -6,7 +6,8 @@ import { useTheme } from "next-themes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { User, Bell, Moon, LogOut, Activity, Award, Settings } from "lucide-react";
+import { User, Bell, Moon, LogOut, Activity, Award, Settings, BookOpen } from "lucide-react";
+import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
@@ -98,6 +99,24 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </div>
+      </section>
+
+      {/* Education Hub */}
+      <section>
+        <Card className="border-none shadow-sm bg-gradient-to-r from-primary to-emerald-600 text-primary-foreground overflow-hidden relative">
+          <div className="absolute right-0 top-0 opacity-10">
+            <BookOpen className="w-32 h-32 -mt-4 -mr-4" />
+          </div>
+          <CardContent className="p-6 relative z-10 flex flex-col items-start space-y-3">
+            <div>
+              <h3 className="font-bold text-lg">Education Hub</h3>
+              <p className="text-primary-foreground/80 text-sm">Micro-lessons and terminology</p>
+            </div>
+            <Button asChild variant="secondary" className="bg-background text-primary hover:bg-background/90 font-bold px-6">
+              <Link href="/education">Explore</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </section>
 
       {/* Settings List */}

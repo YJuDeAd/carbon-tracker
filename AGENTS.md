@@ -129,11 +129,11 @@ Agents work in phases matching the project roadmap:
 - [x] 4. Frontend Engineer → onboarding + log activity + basic dashboard
 - [x] 5. QA Engineer → Playwright tests for core flows
 
-**Phase 2 (Core Product) - [IN PROGRESS]:**
+**Phase 2 (Core Product) - [COMPLETED]:**
 - [x] 1. Backend Engineer → Groq insights service + goals endpoints
 - [x] 2. Frontend Engineer → insights page + goals page + streaks/badges
 - [x] 3. DevOps Engineer → CI/CD pipeline + Vercel + Render deployment
-- [ ] 4. QA Engineer → full E2E test suite + emission calculation unit tests
+- [x] 4. QA Engineer → full E2E test suite + emission calculation unit tests
 
 **Phase 3 (Growth) - [PENDING]:**
 - [ ] 1. Frontend Engineer → education hub + community challenges + PWA
