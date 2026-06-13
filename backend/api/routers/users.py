@@ -147,7 +147,7 @@ def get_community_leaderboard(
     """
     Fetch the top 10 users ranked by lowest baseline score.
     """
-    resp = supabase.table("users").select("id, email, baseline_score").not_.is_("baseline_score", "null").order("baseline_score").limit(10).execute()
+    resp = supabase.table("users").select("id, display_name, baseline_score").not_.is_("baseline_score", "null").order("baseline_score").limit(10).execute()
     users = resp.data or []
     
     leaderboard = []
@@ -165,8 +165,7 @@ def get_community_leaderboard(
         if is_current:
             name = "Eco Warrior (You)"
         else:
-            email = u.get("email", "")
-            name = email.split("@")[0] if "@" in email else "Eco User"
+            name = u.get("display_name") or "Eco User"
             
         score = float(u["baseline_score"])
         
