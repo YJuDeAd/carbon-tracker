@@ -67,7 +67,7 @@ test.describe('Phase 3 Features', () => {
     await page.goto('/log?category=transport', { waitUntil: 'networkidle' });
 
     // Click Auto-calculate
-    await page.getByRole('button', { name: 'Auto-calculate' }).click();
+    await page.getByRole('button', { name: 'Auto-calculate distance' }).click();
 
     // Fill origin and destination
     await page.getByPlaceholder('Origin (e.g. London)').fill('London');
@@ -77,6 +77,6 @@ test.describe('Phase 3 Features', () => {
     await page.getByRole('button', { name: 'Suggest Distance' }).click();
 
     // Expect the fallback to manual input with the calculated distance
-    await expect(page.locator('input#transport-dist')).toHaveValue('123.4');
+    await expect(page.locator('input[placeholder="0"]')).toHaveValue('123.4');
   });
 });

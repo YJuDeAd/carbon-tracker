@@ -10,13 +10,10 @@ test.describe('Log Activity Flow', () => {
     // Navigate to log page
     await page.goto('/log', { waitUntil: 'networkidle' });
 
-    // Transport tab should be active/visible
-    await expect(page.getByText('Vehicle Type')).toBeVisible();
-
-    await page.locator('select#transport-type').selectOption({ label: 'Electric Car' });
+    await page.getByRole('button', { name: 'Electric Car', exact: true }).click();
 
     // Enter distance
-    await page.fill('input#transport-dist', '45');
+    await page.locator('input[placeholder="0"]').fill('45');
 
     // Wait slightly to ensure react state bound
     await page.waitForTimeout(500);
