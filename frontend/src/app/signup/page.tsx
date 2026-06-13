@@ -22,8 +22,28 @@ export default function SignupPage() {
     setIsLoading(true);
     setError(null);
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
+    if (password.length <= 8) {
+      setError("Password must be more than 8 characters long.");
+      setIsLoading(false);
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError("Password must contain at least one uppercase letter.");
+      setIsLoading(false);
+      return;
+    }
+    if (!/[a-z]/.test(password)) {
+      setError("Password must contain at least one lowercase letter.");
+      setIsLoading(false);
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setError("Password must contain at least one digit.");
+      setIsLoading(false);
+      return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      setError("Password must contain at least one special character.");
       setIsLoading(false);
       return;
     }
@@ -110,10 +130,10 @@ export default function SignupPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minLength={8}
+            minLength={9}
             className="h-12"
           />
-          <p className="text-xs text-muted-foreground">Must be at least 8 characters.</p>
+          <p className="text-xs text-muted-foreground">Must be more than 8 chars, with uppercase, lowercase, number, and special char.</p>
         </div>
 
         {error && <p className="text-destructive text-sm font-medium text-center">{error}</p>}
