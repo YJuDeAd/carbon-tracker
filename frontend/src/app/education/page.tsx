@@ -44,7 +44,7 @@ export default function EducationHub() {
                 <div>
                   <h3 className="font-bold text-lg leading-tight mb-1">Vampire Energy</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Devices plugged in but turned off still drain power. This "vampire energy" accounts for 5% to 10% of an average household's annual electricity usage.
+                    Devices plugged in but turned off still drain power. This &quot;vampire energy&quot; accounts for 5% to 10% of an average household&apos;s annual electricity usage.
                   </p>
                 </div>
               </div>
@@ -104,7 +104,7 @@ export default function EducationHub() {
           </div>
           <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
             <h4 className="font-bold text-primary mb-1">Carbon Offset vs. Carbon Credit</h4>
-            <p className="text-sm text-muted-foreground">A <strong>Carbon Credit</strong> is a "permission slip" typically used by regulated companies allowing them to emit one tonne of CO₂. A <strong>Carbon Offset</strong> is a voluntary contribution to a project (like reforestation) that removes or prevents one tonne of CO₂ elsewhere.</p>
+            <p className="text-sm text-muted-foreground">A <strong>Carbon Credit</strong> is a &quot;permission slip&quot; typically used by regulated companies allowing them to emit one tonne of CO₂. A <strong>Carbon Offset</strong> is a voluntary contribution to a project (like reforestation) that removes or prevents one tonne of CO₂ elsewhere.</p>
           </div>
           <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
             <h4 className="font-bold text-primary mb-1">Greenwashing</h4>
