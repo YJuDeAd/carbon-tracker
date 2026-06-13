@@ -42,7 +42,7 @@ export default function SignupPage() {
       setIsLoading(false);
       return;
     }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    if (!/[^A-Za-z0-9]/.test(password)) {
       setError("Password must contain at least one special character.");
       setIsLoading(false);
       return;
