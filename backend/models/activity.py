@@ -21,3 +21,8 @@ class ActivityResponse(BaseModel):
     notes: str | None = None
     
     model_config = ConfigDict(from_attributes=True)
+
+class SuggestTransportResponse(BaseModel):
+    distance_km: float
+    vehicle_type: str
+    co2e_kg: float

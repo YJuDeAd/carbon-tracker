@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from core.database import supabase
 from core.security import get_current_user_id
-from models.activity import ActivityCreate, ActivityResponse
+from models.activity import ActivityCreate, ActivityResponse, SuggestTransportResponse
 from services.gamification_service import check_and_award_badges
 
 router = APIRouter(prefix="/activities", tags=["activities"])
@@ -59,3 +59,46 @@ def get_activities(user_id: str = Depends(get_current_user_id)):
     """
     response = supabase.table("activities").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
     return response.data
+
+@router.get("/suggest-transport", response_model=SuggestTransportResponse)
+async def suggest_transport(
+    origin: str, 
+    destination: str, 
+    vehicle_type: str, 
+    user_id: str = Depends(get_current_user_id)
+):
+    """
+    Given an origin, destination, and vehicle type, calculates the driving distance in km
+    using OpenStreetMap Nominatim and suggests the estimated CO2e footprint.
+    """
+    from services.osm_service import get_distance_km
+    from services.emission_calc import calculate_emission
+
+    try:
+        distance_km = await get_distance_km(origin, destination)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to calculate distance")
+
+    factor_resp = supabase.table("emission_factors").select("*") \
+        .eq("category", "Transport") \
+        .eq("activity_type", vehicle_type) \
+        .execute()
+        
+    if not factor_resp.data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"No emission factor found for Transport and type '{vehicle_type}'"
+        )
+        
+    factor = factor_resp.data[0]
+    co2e_per_unit = float(factor["co2e_per_unit"])
+    
+    calculated_co2e_kg = calculate_emission(distance_km, co2e_per_unit)
+
+    return SuggestTransportResponse(
+        distance_km=distance_km,
+        vehicle_type=vehicle_type,
+        co2e_kg=calculated_co2e_kg
+    )
